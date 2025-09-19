@@ -226,7 +226,7 @@ const ContratCreation: React.FC = () => {
         raisonSociale: demande.raisonSociale,
         email: demande.email,
         zone: formData.zoneMedicale,
-        montant: tarifAnnuel,
+        montant: formData.tarifAnnuel || tarifAnnuel,
         dateGeneration: new Date().toISOString(),
         contratId: contrat.id,
         demandeId: demande.id

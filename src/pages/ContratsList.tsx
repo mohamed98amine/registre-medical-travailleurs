@@ -2,19 +2,20 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { 
-  FileText, 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit3, 
-  Eye, 
+import {
+  FileText,
+  Plus,
+  Search,
+  Filter,
+  Edit3,
+  Eye,
   Download,
   Calendar,
   Building2,
   DollarSign,
   CheckCircle,
-  XCircle
+  XCircle,
+  Send
 } from 'lucide-react';
 import { contratAPI } from '../services/api';
 import { Contrat } from '../types';
@@ -68,6 +69,42 @@ const ContratsList: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR');
+  };
+
+  const handleSendEmail = async (contrat: Contrat) => {
+    if (!contrat.demandeAffiliation?.email) {
+      alert('Aucune adresse email trouvée pour cette entreprise');
+      return;
+    }
+
+    if (!window.confirm(`Envoyer le contrat ${contrat.numeroContrat} à ${contrat.demandeAffiliation.email} ?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/contrats/${contrat.id}/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: contrat.demandeAffiliation.email
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert(`✅ ${result.message}`);
+      } else {
+        const error = await response.json();
+        alert(`❌ Erreur: ${error.message || 'Erreur lors de l\'envoi'}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi d\'email:', error);
+      alert('❌ Erreur lors de l\'envoi de l\'email');
+    }
   };
 
   if (isLoading) {
@@ -309,17 +346,31 @@ const ContratsList: React.FC = () => {
                     
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <button className="text-blue-600 hover:text-blue-900">
+                        <button
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Voir détails"
+                        >
                           <Eye className="h-4 w-4" />
                         </button>
                         <Link
                           to={`/contrats/${contrat.id}/amender`}
                           className="text-green-600 hover:text-green-900"
+                          title="Amendement"
                         >
                           <Edit3 className="h-4 w-4" />
                         </Link>
-                        <button className="text-gray-600 hover:text-gray-900">
+                        <button
+                          className="text-gray-600 hover:text-gray-900"
+                          title="Télécharger PDF"
+                        >
                           <Download className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleSendEmail(contrat)}
+                          className="text-purple-600 hover:text-purple-900"
+                          title="Envoyer par email"
+                        >
+                          <Send className="h-4 w-4" />
                         </button>
                       </div>
                     </td>

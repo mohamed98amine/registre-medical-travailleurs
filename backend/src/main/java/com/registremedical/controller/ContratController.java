@@ -581,4 +581,99 @@ public class ContratController {
                 .body("Erreur lors de la récupération des statistiques: " + ex.getMessage());
         }
     }
+
+    // Envoyer un contrat par email manuellement
+    @PostMapping("/{id}/send-email")
+    public ResponseEntity<?> sendContratEmail(@PathVariable Long id, @RequestBody Map<String, Object> emailData) {
+        final Long userId;
+        try {
+            userId = jwtUtils.getCurrentUserId();
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Non authentifié: " + ex.getMessage());
+        }
+
+        try {
+            Optional<User> optUser = userRepository.findById(userId);
+            if (optUser.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Utilisateur non trouvé");
+            }
+
+            Optional<Contrat> optContrat = contratRepository.findById(id);
+            if (optContrat.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Contrat non trouvé");
+            }
+
+            Contrat contrat = optContrat.get();
+
+            // Vérifier que l'utilisateur a le droit d'accéder à ce contrat
+            User currentUser = optUser.get();
+            String userRole = currentUser.getRole().name();
+
+            if ("DIRECTEUR_REGIONAL".equals(userRole)) {
+                if (!contrat.getDirecteurRegional().getId().equals(userId)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès refusé à ce contrat");
+                }
+            } else if ("EMPLOYEUR".equals(userRole)) {
+                // Pour les employeurs, vérifier qu'ils sont liés au contrat via la demande d'affiliation
+                if (contrat.getDemandeAffiliation() == null ||
+                    !contrat.getDemandeAffiliation().getEmployeur().getId().equals(userId)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Accès refusé à ce contrat");
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Rôle non autorisé");
+            }
+
+            // Récupérer l'email du destinataire
+            String recipientEmail = (String) emailData.get("email");
+            if (recipientEmail == null || recipientEmail.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email du destinataire requis");
+            }
+
+            // Récupérer la raison sociale
+            String raisonSociale = contrat.getDemandeAffiliation() != null ?
+                contrat.getDemandeAffiliation().getRaisonSociale() : "Entreprise";
+
+            // Générer le PDF du contrat
+            byte[] pdfBytes = pdfService.generateContratPdf(
+                contrat.getNumeroContrat(),
+                raisonSociale,
+                contrat.getZoneMedicale(),
+                contrat.getTarifAnnuel()
+            );
+
+            // Préparer le contenu de l'email
+            String subject = "Contrat d'Affiliation - " + contrat.getNumeroContrat();
+            String htmlBody = "<html><body>" +
+                "<h2>Contrat d'Affiliation</h2>" +
+                "<p>Cher " + raisonSociale + ",</p>" +
+                "<p>Veuillez trouver ci-joint votre contrat d'affiliation.</p>" +
+                "<p><strong>Numéro de contrat:</strong> " + contrat.getNumeroContrat() + "</p>" +
+                "<p><strong>Zone médicale:</strong> " + contrat.getZoneMedicale() + "</p>" +
+                "<p><strong>Montant annuel:</strong> " + String.format("%,.0f", contrat.getTarifAnnuel()) + " XOF</p>" +
+                "<p><strong>Date de signature:</strong> " + contrat.getDateSignature() + "</p>" +
+                "<p>Cordialement,<br>Service de Santé au Travail</p>" +
+                "</body></html>";
+
+            // Envoyer l'email avec le PDF en pièce jointe
+            mailService.sendEmailWithAttachment(
+                recipientEmail,
+                subject,
+                htmlBody,
+                pdfBytes,
+                "contrat_" + contrat.getNumeroContrat() + ".pdf"
+            );
+
+            return ResponseEntity.ok(Map.of(
+                "status", "EMAIL_SENT",
+                "message", "Contrat envoyé par email avec succès",
+                "recipient", recipientEmail,
+                "numeroContrat", contrat.getNumeroContrat()
+            ));
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Erreur lors de l'envoi de l'email: " + ex.getMessage());
+        }
+    }
 }
