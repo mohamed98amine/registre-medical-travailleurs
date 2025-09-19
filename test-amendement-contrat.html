@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Amendement Contrat</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        input, textarea { width: 300px; padding: 5px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Amendement de Contrat</h1>
+    
+    <div class="section info">
+        <h3>📋 Instructions</h3>
+        <p>1. Connectez-vous avec votre compte Directeur Régional</p>
+        <p>2. Créez d'abord un contrat de test</p>
+        <p>3. Testez l'amendement du contrat créé</p>
+    </div>
+
+    <div class="section">
+        <h3>🔐 Connexion</h3>
+        <div>
+            <label>Email:</label><br>
+            <input type="email" id="email" placeholder="directeur@ost.bf" value="directeur.final@ost.bf">
+        </div>
+        <div>
+            <label>Mot de passe:</label><br>
+            <input type="password" id="password" placeholder="password123" value="password123">
+        </div>
+        <button onclick="login()">🔑 Se connecter</button>
+        <button onclick="clearLogs()">🧹 Effacer les logs</button>
+    </div>
+
+    <div class="section">
+        <h3>📄 Gestion des Contrats</h3>
+        <button onclick="testContratCreation()">🏗️ 1. Créer un contrat de test</button>
+        <button onclick="testGetContrats()">📋 2. Lister les contrats</button>
+        <button onclick="testAmendement()">🔧 3. Tester amendement</button>
+    </div>
+
+    <div class="section">
+        <h3>📊 Résultats</h3>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let contratId = null;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `section ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                log('❌ Veuillez entrer email et mot de passe', 'error');
+                return;
+            }
+
+            try {
+                log('🔄 Tentative de connexion...', 'info');
+                
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                log(`📡 Statut de la réponse: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    log('✅ Connexion réussie !', 'success');
+                    log(`🎫 Token reçu: ${authToken.substring(0, 50)}...`, 'success');
+                    log(`👤 Utilisateur: ${data.user.nom} ${data.user.prenom || ''} (${data.user.role})`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur de connexion: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur de connexion: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        async function testContratCreation() {
+            if (!authToken) {
+                log('❌ Veuillez vous connecter d\'abord', 'error');
+                return;
+            }
+
+            const contratData = {
+                raisonSociale: "ENTREPRISE TEST AMENDEMENT",
+                numeroRccm: "BF-OUA-2025-B-99999",
+                adresse: "Zone test, Ouagadougou",
+                secteurActivite: "Test",
+                effectif: 100,
+                contactDrh: "Test CONTACT",
+                email: "test@test.bf",
+                telephone: "70000000",
+                typeContrat: "STANDARD",
+                zoneMedicale: "Ouagadougou Nord",
+                dateDebut: "2025-09-15",
+                duree: 12,
+                commentaires: "Contrat de test pour amendement"
+            };
+
+            try {
+                log('🔄 Création du contrat de test...', 'info');
+                
+                const response = await fetch('http://localhost:8080/api/contrats', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(contratData)
+                });
+
+                log(`📡 Statut création: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const contrat = await response.json();
+                    contratId = contrat.id;
+                    log('✅ Contrat de test créé avec succès !', 'success');
+                    log(`📄 ID du contrat: ${contratId}`, 'success');
+                    log(`📄 Numéro: ${contrat.numeroContrat}`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur création contrat: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur de connexion: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetContrats() {
+            if (!authToken) {
+                log('❌ Veuillez vous connecter d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('🔄 Récupération des contrats...', 'info');
+                
+                const response = await fetch('http://localhost:8080/api/contrats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                log(`📡 Statut GET contrats: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const contrats = await response.json();
+                    log(`✅ Contrats récupérés: ${contrats.length} contrat(s)`, 'success');
+                    
+                    if (contrats.length > 0) {
+                        contratId = contrats[0].id;
+                        log(`📋 Premier contrat ID: ${contratId}`, 'success');
+                        log(`📋 Contrats: <pre>${JSON.stringify(contrats.map(c => ({id: c.id, numero: c.numeroContrat, effectif: c.demandeAffiliation?.effectif})), null, 2)}</pre>`, 'success');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur GET contrats: ${response.status} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur lors de la récupération: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAmendement() {
+            if (!authToken) {
+                log('❌ Veuillez vous connecter d\'abord', 'error');
+                return;
+            }
+
+            if (!contratId) {
+                log('❌ Veuillez d\'abord créer ou récupérer un contrat', 'error');
+                return;
+            }
+
+            const amendementData = {
+                motifAmendement: "Test d'amendement - Augmentation effectif",
+                effectif: 150,
+                tarifAnnuel: 2250000, // 150 * 15000
+                zoneMedicale: "Ouagadougou Sud"
+            };
+
+            try {
+                log(`🔄 Test amendement du contrat ID: ${contratId}...`, 'info');
+                log(`📤 Données d'amendement: <pre>${JSON.stringify(amendementData, null, 2)}</pre>`, 'info');
+                
+                const response = await fetch(`http://localhost:8080/api/contrats/${contratId}/amender`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(amendementData)
+                });
+
+                log(`📡 Statut amendement: ${response.status}`, 'info');
+
+                if (response.ok) {
+                    const nouveauContrat = await response.json();
+                    log('✅ Amendement créé avec succès !', 'success');
+                    log(`📄 Nouveau contrat: <pre>${JSON.stringify({
+                        id: nouveauContrat.id,
+                        numero: nouveauContrat.numeroContrat,
+                        version: nouveauContrat.version,
+                        motif: nouveauContrat.motifAmendement,
+                        tarifAnnuel: nouveauContrat.tarifAnnuel,
+                        zoneMedicale: nouveauContrat.zoneMedicale
+                    }, null, 2)}</pre>`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur amendement: ${response.status}`, 'error');
+                    log(`📝 Détail de l'erreur: ${errorText}`, 'error');
+                    
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        log(`🔍 Erreur JSON: <pre>${JSON.stringify(errorJson, null, 2)}</pre>`, 'error');
+                    } catch (e) {
+                        log(`📝 Erreur texte brut: ${errorText}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Erreur de connexion: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        // Auto-test au chargement
+        window.onload = function() {
+            log('🚀 Page de test amendement chargée. Suivez les étapes dans l\'ordre !', 'info');
+        };
+    </script>
+</body>
+</html>

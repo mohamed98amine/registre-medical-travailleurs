@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Direct</title>
+</head>
+<body>
+    <h1>Test API Backend</h1>
+    <button onclick="testRegister()">Tester Inscription Directeur</button>
+    <div id="result"></div>
+
+    <script>
+        async function testRegister() {
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou",
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                document.getElementById('result').innerHTML = '<p>Test en cours...</p>';
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div style="color: green;">
+                            <h3>✅ Inscription réussie !</h3>
+                            <p>Status: ${response.status}</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div style="color: red;">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Status Text: ${response.statusText}</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="color: red;">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

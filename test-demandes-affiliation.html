@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Système Demandes d'Affiliation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; border: none; }
+        .btn-success { background-color: #28a745; color: white; border: none; }
+        .btn-danger { background-color: #dc3545; color: white; border: none; }
+        .btn-warning { background-color: #ffc107; color: black; border: none; }
+        textarea { width: 100%; height: 100px; margin: 5px 0; }
+        input { margin: 5px 0; padding: 5px; width: 200px; }
+        .form-group { margin: 10px 0; }
+        label { display: inline-block; width: 150px; font-weight: bold; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test Système Demandes d'Affiliation</h1>
+    
+    <div class="section info">
+        <h3>Instructions</h3>
+        <p>1. D'abord, créez les utilisateurs de test</p>
+        <p>2. Connectez-vous en tant qu'employeur</p>
+        <p>3. Créez une demande d'affiliation</p>
+        <p>4. Connectez-vous en tant que directeur</p>
+        <p>5. Approuvez ou rejetez la demande</p>
+        <p>6. Vérifiez que l'employeur voit le changement de statut</p>
+    </div>
+
+    <!-- Section 1: Création des utilisateurs de test -->
+    <div class="section">
+        <h3>1. Créer les utilisateurs de test</h3>
+        <button class="btn-primary" onclick="createTestUsers()">Créer Utilisateurs Test</button>
+        <div id="createUsersResult"></div>
+    </div>
+
+    <!-- Section 2: Connexion Employeur -->
+    <div class="section">
+        <h3>2. Connexion Employeur</h3>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="employeurEmail" value="employeur@test.com">
+        </div>
+        <div class="form-group">
+            <label>Mot de passe:</label>
+            <input type="password" id="employeurPassword" value="password123">
+        </div>
+        <button class="btn-success" onclick="loginEmployeur()">Se connecter</button>
+        <div id="loginEmployeurResult"></div>
+    </div>
+
+    <!-- Section 3: Créer une demande -->
+    <div class="section">
+        <h3>3. Créer une Demande d'Affiliation</h3>
+        <div class="form-group">
+            <label>Raison Sociale:</label>
+            <input type="text" id="raisonSociale" value="Entreprise Test SARL">
+        </div>
+        <div class="form-group">
+            <label>Numéro RCCM:</label>
+            <input type="text" id="numeroRccm" value="RCCM-2024-001">
+        </div>
+        <div class="form-group">
+            <label>Secteur:</label>
+            <input type="text" id="secteurActivite" value="Informatique">
+        </div>
+        <div class="form-group">
+            <label>Effectif:</label>
+            <input type="number" id="effectif" value="25">
+        </div>
+        <div class="form-group">
+            <label>Adresse:</label>
+            <input type="text" id="adresse" value="123 Rue de la Paix, Ouagadougou">
+        </div>
+        <div class="form-group">
+            <label>Représentant:</label>
+            <input type="text" id="representantLegal" value="Jean Dupont">
+        </div>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="emailEntreprise" value="contact@entreprise-test.com">
+        </div>
+        <div class="form-group">
+            <label>Téléphone:</label>
+            <input type="tel" id="telephone" value="+226 70 12 34 56">
+        </div>
+        <div class="form-group">
+            <label>Contact DRH:</label>
+            <input type="text" id="contactDrh" value="Marie Martin">
+        </div>
+        <button class="btn-primary" onclick="createDemande()">Créer Demande</button>
+        <div id="createDemandeResult"></div>
+    </div>
+
+    <!-- Section 4: Voir mes demandes (Employeur) -->
+    <div class="section">
+        <h3>4. Mes Demandes (Employeur)</h3>
+        <button class="btn-warning" onclick="getMyDemandes()">Voir Mes Demandes</button>
+        <button class="btn-warning" onclick="getMyStats()">Mes Statistiques</button>
+        <div id="myDemandesResult"></div>
+    </div>
+
+    <!-- Section 5: Connexion Directeur -->
+    <div class="section">
+        <h3>5. Connexion Directeur</h3>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="directeurEmail" value="directeur@test.com">
+        </div>
+        <div class="form-group">
+            <label>Mot de passe:</label>
+            <input type="password" id="directeurPassword" value="password123">
+        </div>
+        <button class="btn-success" onclick="loginDirecteur()">Se connecter</button>
+        <div id="loginDirecteurResult"></div>
+    </div>
+
+    <!-- Section 6: Voir toutes les demandes (Directeur) -->
+    <div class="section">
+        <h3>6. Toutes les Demandes (Directeur)</h3>
+        <button class="btn-warning" onclick="getAllDemandes()">Voir Toutes les Demandes</button>
+        <button class="btn-warning" onclick="getDirecteurStats()">Statistiques Directeur</button>
+        <div id="allDemandesResult"></div>
+    </div>
+
+    <!-- Section 7: Actions du Directeur -->
+    <div class="section">
+        <h3>7. Actions du Directeur</h3>
+        <div class="form-group">
+            <label>ID Demande:</label>
+            <input type="number" id="demandeId" placeholder="ID de la demande">
+        </div>
+        <div class="form-group">
+            <label>Commentaires:</label>
+            <textarea id="commentaires" placeholder="Commentaires optionnels"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Motif de rejet:</label>
+            <textarea id="motifRejet" placeholder="Motif de rejet (obligatoire pour rejeter)"></textarea>
+        </div>
+        <button class="btn-success" onclick="approveDemande()">Approuver</button>
+        <button class="btn-danger" onclick="rejectDemande()">Rejeter</button>
+        <div id="actionResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let employeurToken = '';
+        let directeurToken = '';
+
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${message}</pre>`;
+        }
+
+        async function createTestUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation/create-test-users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                showResult('createUsersResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('createUsersResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function loginEmployeur() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('employeurEmail').value,
+                        password: document.getElementById('employeurPassword').value
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    employeurToken = data.token;
+                    showResult('loginEmployeurResult', `Connexion réussie!\nToken: ${data.token.substring(0, 50)}...`);
+                } else {
+                    showResult('loginEmployeurResult', JSON.stringify(data, null, 2), true);
+                }
+            } catch (error) {
+                showResult('loginEmployeurResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function createDemande() {
+            if (!employeurToken) {
+                showResult('createDemandeResult', 'Veuillez vous connecter en tant qu\'employeur d\'abord', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${employeurToken}`
+                    },
+                    body: JSON.stringify({
+                        raisonSociale: document.getElementById('raisonSociale').value,
+                        numeroRccm: document.getElementById('numeroRccm').value,
+                        secteurActivite: document.getElementById('secteurActivite').value,
+                        effectif: parseInt(document.getElementById('effectif').value),
+                        adresse: document.getElementById('adresse').value,
+                        representantLegal: document.getElementById('representantLegal').value,
+                        email: document.getElementById('emailEntreprise').value,
+                        telephone: document.getElementById('telephone').value,
+                        contactDrh: document.getElementById('contactDrh').value
+                    })
+                });
+                const data = await response.json();
+                showResult('createDemandeResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('createDemandeResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function getMyDemandes() {
+            if (!employeurToken) {
+                showResult('myDemandesResult', 'Veuillez vous connecter en tant qu\'employeur d\'abord', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation/my`, {
+                    headers: { 'Authorization': `Bearer ${employeurToken}` }
+                });
+                const data = await response.json();
+                showResult('myDemandesResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('myDemandesResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function getMyStats() {
+            if (!employeurToken) {
+                showResult('myDemandesResult', 'Veuillez vous connecter en tant qu\'employeur d\'abord', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation/my/stats`, {
+                    headers: { 'Authorization': `Bearer ${employeurToken}` }
+                });
+                const data = await response.json();
+                showResult('myDemandesResult', `Statistiques Employeur:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('myDemandesResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function loginDirecteur() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('directeurEmail').value,
+                        password: document.getElementById('directeurPassword').value
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    directeurToken = data.token;
+                    showResult('loginDirecteurResult', `Connexion réussie!\nToken: ${data.token.substring(0, 50)}...`);
+                } else {
+                    showResult('loginDirecteurResult', JSON.stringify(data, null, 2), true);
+                }
+            } catch (error) {
+                showResult('loginDirecteurResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function getAllDemandes() {
+            if (!directeurToken) {
+                showResult('allDemandesResult', 'Veuillez vous connecter en tant que directeur d\'abord', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation`, {
+                    headers: { 'Authorization': `Bearer ${directeurToken}` }
+                });
+                const data = await response.json();
+                showResult('allDemandesResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('allDemandesResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function getDirecteurStats() {
+            if (!directeurToken) {
+                showResult('allDemandesResult', 'Veuillez vous connecter en tant que directeur d\'abord', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/demandes-affiliation/stats`, {
+                    headers: { 'Authorization': `Bearer ${directeurToken}` }
+                });
+                const data = await response.json();
+                showResult('allDemandesResult', `Statistiques Directeur:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult('allDemandesResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function approveDemande() {
+            if (!directeurToken) {
+                showResult('actionResult', 'Veuillez vous connecter en tant que directeur d\'abord', true);
+                return;
+            }
+
+            const demandeId = document.getElementById('demandeId').value;
+            if (!demandeId) {
+                showResult('actionResult', 'Veuillez saisir l\'ID de la demande', true);
+                return;
+            }
+
+            try {
+                const body = {};
+                const commentaires = document.getElementById('commentaires').value;
+                if (commentaires) {
+                    body.commentaires = commentaires;
+                }
+
+                const response = await fetch(`${API_BASE}/demandes-affiliation/${demandeId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${directeurToken}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('actionResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('actionResult', `Erreur: ${error.message}`, true);
+            }
+        }
+
+        async function rejectDemande() {
+            if (!directeurToken) {
+                showResult('actionResult', 'Veuillez vous connecter en tant que directeur d\'abord', true);
+                return;
+            }
+
+            const demandeId = document.getElementById('demandeId').value;
+            const motifRejet = document.getElementById('motifRejet').value;
+            
+            if (!demandeId) {
+                showResult('actionResult', 'Veuillez saisir l\'ID de la demande', true);
+                return;
+            }
+            if (!motifRejet) {
+                showResult('actionResult', 'Le motif de rejet est obligatoire', true);
+                return;
+            }
+
+            try {
+                const body = { motifRejet };
+                const commentaires = document.getElementById('commentaires').value;
+                if (commentaires) {
+                    body.commentaires = commentaires;
+                }
+
+                const response = await fetch(`${API_BASE}/demandes-affiliation/${demandeId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${directeurToken}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                const data = await response.json();
+                showResult('actionResult', JSON.stringify(data, null, 2));
+            } catch (error) {
+                showResult('actionResult', `Erreur: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

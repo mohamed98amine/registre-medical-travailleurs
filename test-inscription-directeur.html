@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Inscription Directeur Régional</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Inscription Directeur Régional</h1>
+        
+        <div class="result">
+            <h3>Instructions :</h3>
+            <p>1. Assurez-vous que le backend est démarré (port 8080)</p>
+            <p>2. Cliquez sur "Tester l'inscription" pour créer un directeur régional</p>
+            <p>3. Ensuite testez la connexion avec les identifiants créés</p>
+        </div>
+
+        <button onclick="testInscription()">Tester l'inscription Directeur Régional</button>
+        <button onclick="testConnexion()">Tester la connexion</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testInscription() {
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou",
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                document.getElementById('result').innerHTML = '<div class="result">Tentative d\'inscription...</div>';
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Inscription réussie !</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Utilisateur créé:</strong></p>
+                            <pre>${result}</pre>
+                            <p><strong>Identifiants de connexion:</strong></p>
+                            <p>Email: ${directeurData.email}</p>
+                            <p>Mot de passe: ${directeurData.password}</p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Erreur lors de l'inscription</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Erreur:</strong></p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <p><strong>Vérifiez que le backend est démarré sur le port 8080</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testConnexion() {
+            const loginData = {
+                email: "dr.kone@ost.bf",
+                password: "password123"
+            };
+
+            try {
+                document.getElementById('result').innerHTML = '<div class="result">Tentative de connexion...</div>';
+                
+                const response = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Connexion réussie !</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Token reçu:</strong> ${result.token ? 'Oui' : 'Non'}</p>
+                            <p><strong>Utilisateur connecté:</strong></p>
+                            <pre>${JSON.stringify(result.user, null, 2)}</pre>
+                            <p><strong>Rôle:</strong> ${result.user.role}</p>
+                            <p><strong>✅ Le directeur régional peut maintenant accéder à son interface !</strong></p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Erreur lors de la connexion</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Erreur:</strong></p>
+                            <pre>${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                        <p><strong>Vérifiez que le backend est démarré sur le port 8080</strong></p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

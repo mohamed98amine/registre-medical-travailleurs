@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Demande Visite</title>
+</head>
+<body>
+    <h1>Test Création Demande Visite</h1>
+    <button onclick="testCreateDemande()">Tester Création Demande</button>
+    <div id="result"></div>
+
+    <script>
+        async function testCreateDemande() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                document.getElementById('result').innerHTML = 'Erreur: Pas de token. Connectez-vous d\'abord.';
+                return;
+            }
+
+            const payload = {
+                typeVisite: 'EMBAUCHE',
+                specialite: 'GENERALISTE',
+                dateSouhaitee: '2024-12-25',
+                motif: 'Test de demande de visite',
+                travailleurIds: [1] // Remplacez par un ID de travailleur existant
+            };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/demandes-visite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.text();
+                document.getElementById('result').innerHTML = `
+                    <h3>Réponse (${response.status}):</h3>
+                    <pre>${result}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Erreur: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

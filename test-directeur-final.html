@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Final - Directeur Régional</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; }
+        .highlight { background-color: #fff3cd; padding: 10px; border: 1px solid #ffeaa7; border-radius: 3px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test Final - Directeur Régional</h1>
+    
+    <div class="highlight">
+        <h3>🔧 Problème résolu !</h3>
+        <p><strong>Erreur identifiée :</strong> Colonne 'role' trop petite en base de données</p>
+        <p><strong>Solution appliquée :</strong> Ajout de @Column(length = 30) pour UserRole</p>
+        <p><strong>Backend :</strong> Redémarré avec la correction</p>
+    </div>
+    
+    <button onclick="testNewDirecteur()">✅ Tester avec Nouvel Email</button>
+    <button onclick="testConnection()">🔍 Vérifier Backend</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test de connexion...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/profile');
+                if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Backend opérationnel</h3>
+                            <p>Le serveur répond correctement (401 = non authentifié)</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend inaccessible</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p>Attendez quelques secondes que le backend redémarre...</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testNewDirecteur() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test inscription avec correction...</div>';
+            
+            // Email différent pour éviter les conflits
+            const directeurData = {
+                nom: "OUEDRAOGO",
+                prenom: "Fatimata",
+                email: "directeur.ouaga@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 11 22 33"
+            };
+
+            try {
+                console.log('📤 Données envoyées:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse:', responseText);
+                console.log('📊 Status:', response.status);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>🎉 SUCCÈS ! Directeur Régional créé !</h3>
+                            <p><strong>Le problème est résolu !</strong></p>
+                            <p>Status: ${response.status}</p>
+                            <h4>📋 Utilisateur créé :</h4>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🚀 Prochaines étapes :</h4>
+                                <ol>
+                                    <li><strong>Allez sur votre app React :</strong> <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+                                    <li><strong>Connectez-vous avec :</strong>
+                                        <br>📧 Email: directeur.ouaga@ost.bf
+                                        <br>🔑 Mot de passe: password123
+                                    </li>
+                                    <li><strong>Accédez au dashboard</strong> Directeur Régional</li>
+                                    <li><strong>Testez toutes les fonctionnalités</strong> d'affiliation et contrats</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                            <h4>Réponse du serveur :</h4>
+                            <pre>${responseText}</pre>
+                            <hr>
+                            <p><strong>Si l'erreur persiste :</strong></p>
+                            <ul>
+                                <li>Attendez que le backend finisse de redémarrer</li>
+                                <li>Vérifiez les logs du serveur</li>
+                                <li>Essayez avec un autre email</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Le backend est peut-être en train de redémarrer...</strong></p>
+                        <p>Attendez 30 secondes et réessayez</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test automatique de connexion au chargement
+        window.onload = function() {
+            setTimeout(testConnection, 2000);
+        };
+    </script>
+</body>
+</html>

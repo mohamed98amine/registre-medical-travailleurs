@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Final Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Final - Validation Corrigée</h1>
+    
+    <p><strong>Correction appliquée :</strong> Suppression de @NotBlank sur le champ 'prenom'</p>
+    
+    <button onclick="testWithoutPrenom()">Test SANS prénom (devrait marcher)</button>
+    <button onclick="testWithPrenom()">Test AVEC prénom (devrait marcher)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testWithoutPrenom() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test sans prénom...</div>';
+            
+            const data = {
+                email: "directeur.test1@ost.bf",
+                password: "password123",
+                nom: "TRAORE",
+                role: "DIRECTEUR_REGIONAL"
+                // Pas de prénom - devrait maintenant fonctionner
+            };
+
+            await testRegistration(data, "sans prénom");
+        }
+
+        async function testWithPrenom() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test avec prénom...</div>';
+            
+            const data = {
+                email: "directeur.test2@ost.bf",
+                password: "password123",
+                nom: "OUEDRAOGO",
+                prenom: "Fatimata",
+                role: "DIRECTEUR_REGIONAL"
+            };
+
+            await testRegistration(data, "avec prénom");
+        }
+
+        async function testRegistration(data, description) {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('📤 Test ' + description + ':', data);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse ' + description + ':', responseText);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Test ${description} réussi !</h3>
+                            <p>Status: ${response.status}</p>
+                            <p><strong>La validation est maintenant correcte !</strong></p>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <p><strong>🎯 Votre application React devrait maintenant fonctionner !</strong></p>
+                            <p>Essayez de vous inscrire sur <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></p>
+                        </div>
+                    `;
+                } else {
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                    } catch (e) {
+                        errorData = { message: responseText };
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Test ${description} échoué</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Erreur: ${errorData.error || errorData.message || 'Erreur inconnue'}</p>
+                            <pre>${responseText}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>${error.message}</p>
+                        <p><strong>Le backend n'est pas encore démarré</strong></p>
+                        <p>Attendez quelques secondes et réessayez</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test automatique après 5 secondes
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('result').innerHTML = `
+                    <div class="loading">
+                        <h3>⏳ En attente du backend...</h3>
+                        <p>Le backend redémarre avec la correction de validation</p>
+                        <p>Cliquez sur un bouton pour tester quand vous êtes prêt</p>
+                    </div>
+                `;
+            }, 2000);
+        };
+    </script>
+</body>
+</html>

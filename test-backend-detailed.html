@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Backend Détaillé</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Backend Détaillé</h1>
+    
+    <div class="test-section info">
+        <h3>1. Test de Connexion Backend</h3>
+        <button onclick="testBackendConnection()">Tester Connexion</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>2. Test Inscription Directeur Régional</h3>
+        <button onclick="testRegisterDirecteur()">Tester Inscription</button>
+        <div id="register-result"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>3. Test avec Données Minimales</h3>
+        <button onclick="testMinimalData()">Tester Données Minimales</button>
+        <div id="minimal-result"></div>
+    </div>
+
+    <script>
+        async function testBackendConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = '<p>🔄 Test en cours...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Backend accessible !</h4>
+                            <p>Le serveur répond (401 = non authentifié, c'est normal)</p>
+                            <p>Status: ${response.status}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <h4>⚠️ Backend répond avec un status inattendu</h4>
+                            <p>Status: ${response.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Backend inaccessible</h4>
+                        <p>Erreur: ${error.message}</p>
+                        <p>Vérifiez que le backend est démarré sur le port 8080</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRegisterDirecteur() {
+            const resultDiv = document.getElementById('register-result');
+            resultDiv.innerHTML = '<p>🔄 Test en cours...</p>';
+            
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou", 
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                console.log('Données envoyées:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const result = await response.text();
+                console.log('Réponse reçue:', result);
+                console.log('Status:', response.status);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Inscription réussie !</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur ${response.status}</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Status Text: ${response.statusText}</p>
+                            <p>Réponse du serveur:</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erreur de connexion</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testMinimalData() {
+            const resultDiv = document.getElementById('minimal-result');
+            resultDiv.innerHTML = '<p>🔄 Test en cours...</p>';
+            
+            const minimalData = {
+                email: "test@example.com",
+                password: "password123",
+                nom: "Test",
+                prenom: "User",
+                role: "DIRECTEUR_REGIONAL"
+            };
+
+            try {
+                console.log('Données minimales envoyées:', minimalData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(minimalData)
+                });
+
+                const result = await response.text();
+                console.log('Réponse reçue:', result);
+                console.log('Status:', response.status);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Inscription réussie avec données minimales !</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Erreur ${response.status}</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Status Text: ${response.statusText}</p>
+                            <p>Réponse du serveur:</p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Erreur de connexion</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

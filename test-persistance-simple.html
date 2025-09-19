@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Persistance MySQL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Test Persistance MySQL - Demandes d'Affiliation</h1>
+    
+    <button onclick="step1()">1. Créer utilisateurs test</button>
+    <button onclick="step2()">2. Login employeur</button>
+    <button onclick="step3()">3. Créer demande</button>
+    <button onclick="step4()">4. Vérifier mes demandes</button>
+    <button onclick="step5()">5. Login directeur</button>
+    <button onclick="step6()">6. Voir toutes demandes</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        let employeurToken = '';
+        let directeurToken = '';
+
+        function addResult(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.innerHTML = '<pre>' + message + '</pre>';
+            document.getElementById('results').appendChild(div);
+        }
+
+        async function step1() {
+            try {
+                const response = await fetch(`${API}/demandes-affiliation/create-test-users`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                addResult('ÉTAPE 1 - Utilisateurs créés:\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 1: ' + error.message, true);
+            }
+        }
+
+        async function step2() {
+            try {
+                const response = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'employeur@test.com',
+                        password: 'password123'
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    employeurToken = data.token;
+                    addResult('ÉTAPE 2 - Login employeur réussi');
+                } else {
+                    addResult('ERREUR ÉTAPE 2: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 2: ' + error.message, true);
+            }
+        }
+
+        async function step3() {
+            if (!employeurToken) {
+                addResult('ERREUR: Connectez-vous d\'abord en tant qu\'employeur', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API}/demandes-affiliation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${employeurToken}`
+                    },
+                    body: JSON.stringify({
+                        raisonSociale: 'Test Entreprise SARL',
+                        numeroRccm: 'RCCM-TEST-001',
+                        secteurActivite: 'Informatique',
+                        effectif: 10,
+                        adresse: '123 Rue Test, Ouagadougou',
+                        representantLegal: 'Jean Test',
+                        email: 'test@entreprise.com',
+                        telephone: '+226 70 00 00 00',
+                        contactDrh: 'Marie Test'
+                    })
+                });
+                const data = await response.json();
+                addResult('ÉTAPE 3 - Demande créée:\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 3: ' + error.message, true);
+            }
+        }
+
+        async function step4() {
+            if (!employeurToken) {
+                addResult('ERREUR: Connectez-vous d\'abord en tant qu\'employeur', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API}/demandes-affiliation/my`, {
+                    headers: { 'Authorization': `Bearer ${employeurToken}` }
+                });
+                const data = await response.json();
+                addResult('ÉTAPE 4 - Mes demandes:\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 4: ' + error.message, true);
+            }
+        }
+
+        async function step5() {
+            try {
+                const response = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'directeur@test.com',
+                        password: 'password123'
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    directeurToken = data.token;
+                    addResult('ÉTAPE 5 - Login directeur réussi');
+                } else {
+                    addResult('ERREUR ÉTAPE 5: ' + JSON.stringify(data), true);
+                }
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 5: ' + error.message, true);
+            }
+        }
+
+        async function step6() {
+            if (!directeurToken) {
+                addResult('ERREUR: Connectez-vous d\'abord en tant que directeur', true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API}/demandes-affiliation`, {
+                    headers: { 'Authorization': `Bearer ${directeurToken}` }
+                });
+                const data = await response.json();
+                addResult('ÉTAPE 6 - Toutes les demandes:\n' + JSON.stringify(data, null, 2));
+            } catch (error) {
+                addResult('ERREUR ÉTAPE 6: ' + error.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

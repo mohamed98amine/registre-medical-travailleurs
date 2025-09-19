@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Backend Quick</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test Backend - Inscription Directeur Régional</h1>
+    
+    <button onclick="testBackendStatus()">1. Vérifier Backend</button>
+    <button onclick="testRegisterDirecteur()">2. Tester Inscription</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testBackendStatus() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Vérification du backend...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/profile', {
+                    method: 'GET'
+                });
+                
+                // Status 401 = non authentifié mais serveur accessible
+                if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Backend accessible !</h3>
+                            <p>Le serveur Spring Boot répond sur le port 8080</p>
+                            <p>Status: ${response.status} (Non authentifié - normal)</p>
+                            <p><strong>Cliquez maintenant sur "2. Tester Inscription"</strong></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>⚠️ Backend répond avec status inattendu</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Le serveur est accessible mais répond différemment</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend inaccessible</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Le backend n'est pas démarré.</strong></p>
+                        <p>Vérifiez que le serveur Spring Boot fonctionne sur le port 8080</p>
+                        <hr>
+                        <p><strong>Pour démarrer le backend :</strong></p>
+                        <ol>
+                            <li>Ouvrez un terminal</li>
+                            <li>cd backend</li>
+                            <li>mvn clean package -DskipTests</li>
+                            <li>java -jar target/registre-medical-travailleurs-1.0.0.jar</li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+
+        async function testRegisterDirecteur() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test inscription en cours...</div>';
+            
+            // Données pour l'inscription
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou",
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                console.log('📤 Envoi des données:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse reçue:', responseText);
+                console.log('📊 Status:', response.status);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Inscription réussie !</h3>
+                            <p><strong>Le Directeur Régional a été créé avec succès !</strong></p>
+                            <p>Status: ${response.status}</p>
+                            <h4>Données créées :</h4>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <p><strong>✅ Vous pouvez maintenant :</strong></p>
+                            <ol>
+                                <li>Aller sur votre application React (localhost:5173)</li>
+                                <li>Vous connecter avec : dr.kone@ost.bf / password123</li>
+                                <li>Accéder au dashboard Directeur Régional</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    // Erreur détaillée
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur lors de l'inscription</h3>
+                            <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                            <h4>Détails de l'erreur :</h4>
+                            <pre>${responseText}</pre>
+                            <hr>
+                            <h4>Causes possibles :</h4>
+                            <ul>
+                                <li>Email déjà utilisé (dr.kone@ost.bf existe déjà)</li>
+                                <li>Validation des données échouée</li>
+                                <li>Problème avec le rôle DIRECTEUR_REGIONAL</li>
+                                <li>Erreur de base de données</li>
+                            </ul>
+                            <p><strong>💡 Essayez avec un autre email :</strong> 
+                                test-directeur@example.com</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>Impossible de contacter le backend</p>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Vérifiez que le backend est démarré !</strong></p>
+                    </div>
+                `;
+            }
+        }
+
+        // Test automatique au chargement de la page
+        window.onload = function() {
+            setTimeout(testBackendStatus, 1000);
+        };
+    </script>
+</body>
+</html>

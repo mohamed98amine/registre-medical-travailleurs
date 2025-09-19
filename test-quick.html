@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Rapide Backend</title>
+</head>
+<body>
+    <h1>Test Backend</h1>
+    <button onclick="testBackend()">Tester Backend</button>
+    <div id="result"></div>
+
+    <script>
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/profile');
+                document.getElementById('result').innerHTML = `
+                    <p>Status: ${response.status}</p>
+                    <p>Backend ${response.status === 401 ? 'fonctionne' : 'problème'}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red;">Backend non accessible: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

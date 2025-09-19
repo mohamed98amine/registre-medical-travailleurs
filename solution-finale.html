@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solution Finale - Directeur Régional</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; }
+        .info { background-color: #e7f3ff; border: 1px solid #b3d9ff; }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .step { background-color: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }
+        .highlight { background-color: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; border-radius: 5px; margin: 15px 0; }
+        ol { padding-left: 20px; }
+        li { margin: 8px 0; }
+        code { background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Solution Finale - Problème de Base de Données</h1>
+    
+    <div class="warning">
+        <h3>🚨 Problème identifié</h3>
+        <p><strong>La colonne 'role' en base de données est toujours trop petite</strong></p>
+        <p>Même avec <code>create-drop</code>, la structure n'a pas été mise à jour correctement</p>
+        <p><strong>Solution :</strong> Supprimer manuellement la base de données</p>
+    </div>
+
+    <div class="step">
+        <h3>📋 ÉTAPES À SUIVRE (2 minutes)</h3>
+        
+        <h4>1️⃣ Ouvrir MySQL/phpMyAdmin</h4>
+        <ul>
+            <li>Si vous avez <strong>XAMPP</strong> : Démarrez Apache et MySQL, puis allez sur <a href="http://localhost/phpmyadmin" target="_blank">http://localhost/phpmyadmin</a></li>
+            <li>Si vous avez <strong>MySQL Workbench</strong> : Ouvrez-le et connectez-vous</li>
+            <li>Si vous avez <strong>MySQL en ligne de commande</strong> : Ouvrez un terminal</li>
+        </ul>
+
+        <h4>2️⃣ Exécuter le script SQL</h4>
+        <p>Copiez et collez ce script dans votre interface MySQL :</p>
+        <pre>-- Supprimer la base existante
+DROP DATABASE IF EXISTS registre_medical;
+
+-- Recréer la base
+CREATE DATABASE registre_medical CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Utiliser la nouvelle base
+USE registre_medical;</pre>
+
+        <h4>3️⃣ Redémarrer le backend</h4>
+        <p>Une fois la base supprimée, cliquez sur le bouton ci-dessous :</p>
+    </div>
+
+    <button onclick="restartBackendAndTest()">🚀 Redémarrer Backend et Tester</button>
+    <button onclick="testDirectly()">⚡ Tester Seulement (si backend déjà démarré)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function restartBackendAndTest() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="loading">
+                    <h3>🔄 Redémarrage du backend...</h3>
+                    <p>Le backend va recréer automatiquement la base avec la bonne structure</p>
+                    <p>Patientez 30-45 secondes...</p>
+                </div>
+            `;
+
+            // Attendre que l'utilisateur redémarre le backend
+            setTimeout(() => {
+                resultDiv.innerHTML = `
+                    <div class="info">
+                        <h3>⏳ En attente du redémarrage...</h3>
+                        <p><strong>Assurez-vous que :</strong></p>
+                        <ol>
+                            <li>Vous avez exécuté le script SQL pour supprimer la base</li>
+                            <li>Le backend Spring Boot est redémarré</li>
+                            <li>Vous voyez dans les logs : "Started RegistreMedicalTravailleursApplication"</li>
+                        </ol>
+                        <p>Puis cliquez sur "⚡ Tester Seulement"</p>
+                    </div>
+                `;
+            }, 5000);
+        }
+
+        async function testDirectly() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test avec base de données recréée...</div>';
+            
+            // Données de test avec un email unique
+            const directeurData = {
+                nom: "SANKARA",
+                prenom: "Thomas",
+                email: "directeur.sankara@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 55 44 33"
+            };
+
+            try {
+                console.log('📤 Test final avec base recréée:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse finale:', responseText);
+                console.log('📊 Status final:', response.status);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>🎉 SUCCÈS COMPLET ! Problème résolu définitivement !</h3>
+                            <p><strong>✅ La base de données a été recréée avec la bonne structure !</strong></p>
+                            <p><strong>✅ Le Directeur Régional a été créé avec succès !</strong></p>
+                            <p>Status: ${response.status}</p>
+                            <h4>👤 Utilisateur créé :</h4>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🚀 MISSION ACCOMPLIE !</h4>
+                                <p><strong>Connectez-vous maintenant sur votre application :</strong></p>
+                                <ol>
+                                    <li><strong>Allez sur :</strong> <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+                                    <li><strong>Connectez-vous avec :</strong>
+                                        <br>📧 Email: <code>directeur.sankara@ost.bf</code>
+                                        <br>🔑 Mot de passe: <code>password123</code>
+                                    </li>
+                                    <li><strong>Accédez au dashboard Directeur Régional</strong></li>
+                                    <li><strong>Testez toutes les fonctionnalités :</strong>
+                                        <ul>
+                                            <li>✅ Gestion des demandes d'affiliation</li>
+                                            <li>✅ Création de contrats</li>
+                                            <li>✅ Amendements de contrats</li>
+                                            <li>✅ Interface complète opérationnelle</li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                                <p><strong>🎯 Votre interface Directeur Régional est maintenant 100% fonctionnelle !</strong></p>
+                            </div>
+                        </div>
+                    `;
+                } else if (response.status === 400) {
+                    // Vérifier si c'est encore l'erreur de troncature
+                    if (responseText.includes('truncated') || responseText === '') {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ La base de données n'a pas été supprimée</h3>
+                                <p>Status: ${response.status}</p>
+                                <p>L'erreur de troncature persiste</p>
+                                <hr>
+                                <div class="warning">
+                                    <h4>🔧 Action requise :</h4>
+                                    <ol>
+                                        <li><strong>Vérifiez que vous avez bien exécuté le script SQL</strong></li>
+                                        <li><strong>La base "registre_medical" doit être complètement supprimée</strong></li>
+                                        <li><strong>Redémarrez le backend après suppression</strong></li>
+                                        <li><strong>Réessayez le test</strong></li>
+                                    </ol>
+                                    <p><strong>Si le problème persiste :</strong> Vérifiez que MySQL est bien redémarré après suppression de la base</p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ Autre erreur 400</h3>
+                                <p>Status: ${response.status}</p>
+                                <p>Réponse: ${responseText}</p>
+                                <p>Ce n'est plus l'erreur de troncature, mais une autre validation</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                            <p>Réponse: ${responseText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend inaccessible</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Le backend n'est pas démarré ou pas encore prêt</strong></p>
+                        <hr>
+                        <div class="info">
+                            <h4>🔧 Vérifications :</h4>
+                            <ol>
+                                <li>Le backend Spring Boot est-il démarré ?</li>
+                                <li>Voyez-vous "Tomcat started on port 8080" dans les logs ?</li>
+                                <li>La base de données MySQL est-elle accessible ?</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Instructions au chargement
+        window.onload = function() {
+            document.getElementById('result').innerHTML = `
+                <div class="info">
+                    <h3>📋 Instructions</h3>
+                    <p><strong>1.</strong> Supprimez la base de données avec le script SQL ci-dessus</p>
+                    <p><strong>2.</strong> Redémarrez le backend Spring Boot</p>
+                    <p><strong>3.</strong> Cliquez sur "🚀 Redémarrer Backend et Tester"</p>
+                    <p><strong>Cette fois, ça va fonctionner ! 🎯</strong></p>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>

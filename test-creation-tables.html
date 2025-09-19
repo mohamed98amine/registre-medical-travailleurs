@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Création Tables</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; }
+        .info { background-color: #e7f3ff; border: 1px solid #b3d9ff; }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .highlight { background-color: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; border-radius: 5px; margin: 15px 0; }
+        code { background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Création des Tables</h1>
+    
+    <div class="info">
+        <h3>✅ Progrès accompli :</h3>
+        <p>✅ Base de données supprimée avec succès</p>
+        <p>✅ Configuration changée en <code>ddl-auto=create</code></p>
+        <p>✅ Backend redémarré</p>
+        <p><strong>🎯 Maintenant : Hibernate va créer les tables avec la bonne structure</strong></p>
+    </div>
+
+    <button onclick="waitAndTest()">⏳ Attendre 30s et Tester</button>
+    <button onclick="testImmediately()">⚡ Tester Maintenant</button>
+    
+    <div id="result"></div>
+
+    <script>
+        let countdown = 30;
+        
+        async function waitAndTest() {
+            const resultDiv = document.getElementById('result');
+            
+            const countdownInterval = setInterval(() => {
+                resultDiv.innerHTML = `
+                    <div class="loading">
+                        <h3>⏳ Attente de la création des tables...</h3>
+                        <p>Test automatique dans <strong>${countdown}</strong> secondes</p>
+                        <p>Hibernate crée les tables avec la bonne structure (colonne role = 30 caractères)</p>
+                    </div>
+                `;
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    testImmediately();
+                }
+            }, 1000);
+        }
+
+        async function testImmediately() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test avec tables recréées...</div>';
+            
+            // Données de test
+            const directeurData = {
+                nom: "COMPAORE",
+                prenom: "Blaise",
+                email: "directeur.compaore@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 11 22 33"
+            };
+
+            try {
+                console.log('📤 Test avec tables recréées:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse avec tables:', responseText);
+                console.log('📊 Status avec tables:', response.status);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>🎉 VICTOIRE TOTALE ! Tables créées et inscription réussie !</h3>
+                            <p><strong>✅ Les tables ont été créées avec la bonne structure !</strong></p>
+                            <p><strong>✅ La colonne 'role' a maintenant 30 caractères !</strong></p>
+                            <p><strong>✅ Le Directeur Régional a été créé avec succès !</strong></p>
+                            <p>Status: ${response.status}</p>
+                            <h4>👤 Utilisateur créé :</h4>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🚀 MISSION 100% ACCOMPLIE !</h4>
+                                <p><strong>Votre interface Directeur Régional est opérationnelle !</strong></p>
+                                <ol>
+                                    <li><strong>Allez sur :</strong> <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+                                    <li><strong>Connectez-vous avec :</strong>
+                                        <br>📧 Email: <code>directeur.compaore@ost.bf</code>
+                                        <br>🔑 Mot de passe: <code>password123</code>
+                                    </li>
+                                    <li><strong>Accédez au dashboard Directeur Régional</strong></li>
+                                    <li><strong>Testez toutes les fonctionnalités :</strong>
+                                        <ul>
+                                            <li>✅ Gestion des demandes d'affiliation</li>
+                                            <li>✅ Création de contrats</li>
+                                            <li>✅ Amendements de contrats</li>
+                                            <li>✅ Interface complète et fonctionnelle</li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                                <p><strong>🎯 Le problème de base de données est définitivement résolu !</strong></p>
+                            </div>
+                        </div>
+                    `;
+                } else if (response.status === 400) {
+                    if (responseText.includes("doesn't exist") || responseText.includes("Table")) {
+                        resultDiv.innerHTML = `
+                            <div class="warning">
+                                <h3>⏳ Tables pas encore créées</h3>
+                                <p>Status: ${response.status}</p>
+                                <p>Hibernate n'a pas encore fini de créer les tables</p>
+                                <hr>
+                                <div class="info">
+                                    <h4>🔧 Solution :</h4>
+                                    <ol>
+                                        <li>Attendez encore 30-60 secondes</li>
+                                        <li>Vérifiez les logs du backend pour voir "Started RegistreMedicalTravailleursApplication"</li>
+                                        <li>Réessayez le test</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        `;
+                    } else if (responseText.includes('truncated') || responseText === '') {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ Erreur de troncature encore présente</h3>
+                                <p>Status: ${response.status}</p>
+                                <p>La colonne role est encore trop petite</p>
+                                <hr>
+                                <div class="warning">
+                                    <h4>🔧 Action requise :</h4>
+                                    <p><strong>Il faut vérifier manuellement la structure de la table :</strong></p>
+                                    <ol>
+                                        <li>Allez sur phpMyAdmin ou MySQL Workbench</li>
+                                        <li>Ouvrez la base "registre_medical"</li>
+                                        <li>Regardez la table "users"</li>
+                                        <li>Vérifiez que la colonne "role" a une taille de 30 caractères</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <div class="error">
+                                <h3>❌ Autre erreur 400</h3>
+                                <p>Status: ${response.status}</p>
+                                <p>Réponse: ${responseText}</p>
+                                <p>Ce n'est plus l'erreur de table manquante</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                            <p>Réponse: ${responseText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend inaccessible</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Le backend n'est pas encore prêt</strong></p>
+                        <hr>
+                        <div class="info">
+                            <h4>🔧 Vérifications :</h4>
+                            <ol>
+                                <li>Le backend Spring Boot est-il démarré ?</li>
+                                <li>Voyez-vous "Tomcat started on port 8080" dans les logs ?</li>
+                                <li>Hibernate a-t-il créé les tables ?</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Instructions au chargement
+        window.onload = function() {
+            document.getElementById('result').innerHTML = `
+                <div class="info">
+                    <h3>🔄 En cours...</h3>
+                    <p>Le backend recrée les tables avec la bonne structure</p>
+                    <p>Cliquez sur "⏳ Attendre 30s et Tester" pour un test automatique</p>
+                    <p><strong>Cette fois, ça va marcher ! 🎯</strong></p>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>

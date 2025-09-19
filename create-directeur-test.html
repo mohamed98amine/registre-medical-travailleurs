@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Créer un Directeur Régional de test</title>
+</head>
+<body>
+    <h2>Créer un Directeur Régional de test</h2>
+    <button onclick="createDirecteur()">Créer Dr. Kone Amadou (Directeur Régional Centre)</button>
+    <button onclick="createDemandeTest()">Créer une demande d'affiliation de test</button>
+    <div id="result"></div>
+
+    <script>
+        async function createDirecteur() {
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou",
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const result = await response.text();
+                document.getElementById('result').innerHTML = `
+                    <h3>Résultat création directeur:</h3>
+                    <p>Status: ${response.status}</p>
+                    <p>Response: ${result}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Erreur directeur:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        async function createDemandeTest() {
+            // D'abord se connecter comme directeur pour créer une demande
+            const loginData = {
+                email: "dr.kone@ost.bf",
+                password: "password123"
+            };
+
+            try {
+                const loginResponse = await fetch('http://localhost:8080/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                if (!loginResponse.ok) {
+                    throw new Error('Connexion échouée');
+                }
+
+                const loginResult = await loginResponse.json();
+                const token = loginResult.token;
+
+                // Créer une demande d'affiliation de test
+                const demandeData = {
+                    raisonSociale: "SONABHY SA",
+                    numeroRccm: "BF-OUA-2018-B-12345",
+                    secteurActivite: "Distribution de carburants",
+                    effectif: 245,
+                    adresse: "Zone Industrielle, Ouagadougou",
+                    representantLegal: "M. OUEDRAOGO Jean",
+                    email: "drh@sonabhy.bf",
+                    telephone: "+226 25 30 40 50",
+                    contactDrh: "OUEDRAOGO Jean",
+                    chiffreAffaireAnnuel: 15000000000,
+                    statut: "NOUVELLE"
+                };
+
+                const demandeResponse = await fetch('http://localhost:8080/api/demandes-affiliation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(demandeData)
+                });
+
+                const demandeResult = await demandeResponse.text();
+                document.getElementById('result').innerHTML += `
+                    <h3>Résultat création demande:</h3>
+                    <p>Status: ${demandeResponse.status}</p>
+                    <p>Response: ${demandeResult}</p>
+                `;
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML += `
+                    <h3>Erreur demande:</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

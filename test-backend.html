@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Backend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .warning { border-left-color: #ffc107; background: #fff3cd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test de Connexion Backend</h1>
+        
+        <div class="result warning">
+            <h3>⚠️ Diagnostic du problème</h3>
+            <p>L'erreur 400 indique que le backend n'est pas accessible ou qu'il y a un problème avec la requête.</p>
+        </div>
+
+        <button onclick="testBackend()">🔍 Tester la connexion backend</button>
+        <button onclick="testInscriptionSimple()">📝 Tester l'inscription simple</button>
+        <button onclick="testInscriptionDirecteur()">👨‍💼 Tester l'inscription Directeur Régional</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testBackend() {
+            try {
+                document.getElementById('result').innerHTML = '<div class="result">🔄 Test de connexion au backend...</div>';
+                
+                // Test simple de connexion
+                const response = await fetch('http://localhost:8080/api/auth/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                document.getElementById('result').innerHTML = `
+                    <div class="result ${response.ok ? 'success' : 'warning'}">
+                        <h3>${response.ok ? '✅ Backend accessible' : '⚠️ Backend accessible mais erreur d\'authentification'}</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Status Text:</strong> ${response.statusText}</p>
+                        <p><strong>URL:</strong> http://localhost:8080</p>
+                        ${response.ok ? 
+                            '<p>✅ Le backend fonctionne correctement !</p>' : 
+                            '<p>⚠️ Le backend répond mais nécessite une authentification (normal pour /profile)</p>'
+                        }
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Backend non accessible</h3>
+                        <p><strong>Erreur:</strong> ${error.message}</p>
+                        <p><strong>Vérifications à faire :</strong></p>
+                        <ul>
+                            <li>Le backend est-il démarré ? (port 8080)</li>
+                            <li>Y a-t-il des erreurs dans la console du backend ?</li>
+                            <li>Le port 8080 est-il libre ?</li>
+                        </ul>
+                        <p><strong>Solution :</strong> Démarrez le backend avec :</p>
+                        <code>cd backend && mvn spring-boot:run</code>
+                    </div>
+                `;
+            }
+        }
+
+        async function testInscriptionSimple() {
+            const userData = {
+                nom: "Test",
+                prenom: "User",
+                email: "test@example.com",
+                password: "password123",
+                role: "EMPLOYEUR",
+                telephone: "123456789"
+            };
+
+            try {
+                document.getElementById('result').innerHTML = '<div class="result">🔄 Test d\'inscription simple...</div>';
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Inscription simple réussie</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Réponse:</strong></p>
+                            <pre>${result}</pre>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Erreur lors de l'inscription simple</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Erreur:</strong></p>
+                            <pre>${result}</pre>
+                            <p><strong>Vérifiez les logs du backend pour plus de détails</strong></p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testInscriptionDirecteur() {
+            const directeurData = {
+                nom: "KONE",
+                prenom: "Amadou",
+                email: "dr.kone@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 12 34 56"
+            };
+
+            try {
+                document.getElementById('result').innerHTML = '<div class="result">🔄 Test d\'inscription Directeur Régional...</div>';
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Inscription Directeur Régional réussie !</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Utilisateur créé:</strong></p>
+                            <pre>${result}</pre>
+                            <p><strong>Identifiants de connexion:</strong></p>
+                            <p>📧 Email: ${directeurData.email}</p>
+                            <p>🔑 Mot de passe: ${directeurData.password}</p>
+                            <p><strong>✅ Le Directeur Régional peut maintenant se connecter !</strong></p>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Erreur lors de l'inscription Directeur Régional</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Erreur:</strong></p>
+                            <pre>${result}</pre>
+                            <p><strong>Possible cause:</strong> Le rôle DIRECTEUR_REGIONAL n'est pas reconnu par le backend</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p><strong>Message:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

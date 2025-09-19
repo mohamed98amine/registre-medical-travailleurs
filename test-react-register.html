@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Inscription React</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        .info { background-color: #e7f3ff; border: 1px solid #b3d9ff; }
+        button { padding: 12px 24px; margin: 8px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .highlight { background-color: #fff3cd; padding: 15px; border: 1px solid #ffeaa7; border-radius: 5px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Inscription React - Format Correct</h1>
+    
+    <div class="info">
+        <h3>🔧 Problème identifié :</h3>
+        <p>Le formulaire React envoie <code>undefined</code> pour les champs optionnels</p>
+        <p>Le backend Java n'accepte pas les valeurs <code>undefined</code></p>
+        <p><strong>Solution :</strong> N'envoyer que les champs avec des valeurs</p>
+    </div>
+
+    <button onclick="testCorrectFormat()">✅ Tester Format Corrigé</button>
+    <button onclick="testWithOptionalFields()">📝 Tester avec Champs Optionnels</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testCorrectFormat() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test avec format corrigé...</div>';
+            
+            // Format corrigé - seulement les champs obligatoires
+            const registerData = {
+                email: "test.directeur@ost.bf",
+                password: "password123",
+                nom: "TRAORE",
+                role: "DIRECTEUR_REGIONAL"
+            };
+
+            try {
+                console.log('📤 Données format corrigé:', registerData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(registerData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse format corrigé:', responseText);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Format corrigé fonctionne !</h3>
+                            <p>Status: ${response.status}</p>
+                            <p><strong>Le problème était bien les champs undefined</strong></p>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🎯 Solution confirmée !</h4>
+                                <p>Votre application React devrait maintenant fonctionner</p>
+                                <p>Essayez de vous inscrire depuis http://localhost:5173</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Réponse: ${responseText}</p>
+                            <p>Le problème n'était pas les champs undefined</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testWithOptionalFields() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test avec champs optionnels...</div>';
+            
+            // Format avec champs optionnels (comme React corrigé)
+            const registerData = {
+                email: "directeur.avec.tel@ost.bf",
+                password: "password123",
+                nom: "OUEDRAOGO",
+                prenom: "Fatimata",
+                telephone: "+226 70 11 22 33",
+                role: "DIRECTEUR_REGIONAL"
+            };
+
+            try {
+                console.log('📤 Données avec optionnels:', registerData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(registerData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse avec optionnels:', responseText);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Inscription avec champs optionnels réussie !</h3>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🎯 Parfait !</h4>
+                                <p>L'inscription fonctionne avec et sans champs optionnels</p>
+                                <p>Votre application React est maintenant corrigée</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Réponse: ${responseText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Erreur de connexion</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById('result').innerHTML = `
+                <div class="info">
+                    <h3>🔧 Correction appliquée</h3>
+                    <p>Le formulaire React a été modifié pour ne pas envoyer de valeurs undefined</p>
+                    <p>Testez maintenant pour confirmer que ça fonctionne</p>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Base de Données Corrigée</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 3px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; }
+        .highlight { background-color: #e7f3ff; padding: 15px; border: 1px solid #b3d9ff; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Base de Données Corrigée</h1>
+    
+    <div class="highlight">
+        <h3>🚨 ATTENTION : Base de données recréée !</h3>
+        <p><strong>Configuration appliquée :</strong> <code>spring.jpa.hibernate.ddl-auto=create-drop</code></p>
+        <p><strong>Effet :</strong> Toutes les données existantes ont été supprimées</p>
+        <p><strong>Avantage :</strong> La colonne 'role' a maintenant la bonne taille (30 caractères)</p>
+        <p><strong>⚠️ Tous les utilisateurs précédents ont été supprimés</strong></p>
+    </div>
+    
+    <button onclick="waitAndTest()">🚀 Attendre et Tester (30s)</button>
+    <button onclick="testDirectly()">⚡ Tester Immédiatement</button>
+    
+    <div id="result"></div>
+
+    <script>
+        let countdown = 30;
+        
+        async function waitAndTest() {
+            const resultDiv = document.getElementById('result');
+            
+            // Compte à rebours
+            const countdownInterval = setInterval(() => {
+                resultDiv.innerHTML = `
+                    <div class="loading">
+                        <h3>⏳ Attente du redémarrage du backend...</h3>
+                        <p>Test automatique dans <strong>${countdown}</strong> secondes</p>
+                        <p>Le backend recrée la base de données avec la bonne taille de colonne</p>
+                    </div>
+                `;
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    testDirectly();
+                }
+            }, 1000);
+        }
+
+        async function testDirectly() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">🔄 Test de l\'inscription avec base corrigée...</div>';
+            
+            // Nouvel utilisateur avec email unique
+            const directeurData = {
+                nom: "TRAORE",
+                prenom: "Aminata",
+                email: "directeur.regional@ost.bf",
+                password: "password123",
+                role: "DIRECTEUR_REGIONAL",
+                telephone: "+226 70 99 88 77"
+            };
+
+            try {
+                console.log('📤 Test avec base recréée:', directeurData);
+                
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(directeurData)
+                });
+
+                const responseText = await response.text();
+                console.log('📥 Réponse:', responseText);
+                console.log('📊 Status:', response.status);
+                
+                if (response.ok) {
+                    let userData;
+                    try {
+                        userData = JSON.parse(responseText);
+                    } catch (e) {
+                        userData = responseText;
+                    }
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>🎉 SUCCÈS TOTAL ! Base de données corrigée !</h3>
+                            <p><strong>✅ Le problème de taille de colonne est résolu !</strong></p>
+                            <p>Status: ${response.status}</p>
+                            <h4>👤 Directeur Régional créé :</h4>
+                            <pre>${JSON.stringify(userData, null, 2)}</pre>
+                            <hr>
+                            <div class="highlight">
+                                <h4>🚀 ÉTAPES SUIVANTES :</h4>
+                                <ol>
+                                    <li><strong>Allez sur votre application :</strong> <a href="http://localhost:5173" target="_blank">http://localhost:5173</a></li>
+                                    <li><strong>Connectez-vous avec :</strong>
+                                        <br>📧 Email: <code>directeur.regional@ost.bf</code>
+                                        <br>🔑 Mot de passe: <code>password123</code>
+                                    </li>
+                                    <li><strong>Accédez au dashboard</strong> Directeur Régional</li>
+                                    <li><strong>Testez toutes les fonctionnalités :</strong>
+                                        <ul>
+                                            <li>Gestion des demandes d'affiliation</li>
+                                            <li>Création de contrats</li>
+                                            <li>Amendements de contrats</li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                                <p><strong>🎯 Mission accomplie ! Votre interface Directeur Régional est opérationnelle !</strong></p>
+                            </div>
+                        </div>
+                    `;
+                } else if (response.status === 400) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur 400 - Backend pas encore prêt</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Réponse: ${responseText}</p>
+                            <hr>
+                            <div class="warning">
+                                <h4>⏳ Le backend est probablement encore en train de démarrer</h4>
+                                <p><strong>Solutions :</strong></p>
+                                <ol>
+                                    <li>Attendez 30-60 secondes de plus</li>
+                                    <li>Cliquez sur "⚡ Tester Immédiatement" à nouveau</li>
+                                    <li>Vérifiez que le processus Java fonctionne</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Erreur ${response.status}</h3>
+                            <p>Status: ${response.status} ${response.statusText}</p>
+                            <p>Réponse: ${responseText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Backend inaccessible</h3>
+                        <p>Erreur: ${error.message}</p>
+                        <p><strong>Le backend n'a pas encore fini de démarrer</strong></p>
+                        <hr>
+                        <div class="warning">
+                            <h4>⏳ Patientez...</h4>
+                            <p>Le backend recrée entièrement la base de données, cela peut prendre 1-2 minutes</p>
+                            <p>Réessayez dans quelques instants</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Test automatique après 5 secondes
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('result').innerHTML = `
+                    <div class="loading">
+                        <h3>🔄 Initialisation...</h3>
+                        <p>Le backend recrée la base de données avec la correction</p>
+                        <p>Cliquez sur un bouton pour tester quand vous êtes prêt</p>
+                    </div>
+                `;
+            }, 2000);
+        };
+    </script>
+</body>
+</html>

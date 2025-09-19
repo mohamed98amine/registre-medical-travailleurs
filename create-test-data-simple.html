@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer des données de test - Version Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .success {
+            background: #10b981;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #3b82f6;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #f59e0b;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .token-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Créer des Données de Test - Version Simple</h1>
+        <p>Cette version utilise votre token existant depuis votre session React</p>
+        
+        <div class="warning">
+            <strong>📋 Instructions :</strong><br>
+            1. Connectez-vous d'abord sur votre interface React (http://localhost:5173)<br>
+            2. Ouvrez les outils de développement (F12)<br>
+            3. Allez dans l'onglet "Application" → "Local Storage" → "http://localhost:5173"<br>
+            4. Copiez la valeur de "token" et collez-la ci-dessous<br>
+            5. Cliquez sur "Créer les données de test"
+        </div>
+
+        <div>
+            <label for="tokenInput"><strong>Token JWT :</strong></label>
+            <textarea id="tokenInput" class="token-input" rows="3" placeholder="Collez votre token JWT ici..."></textarea>
+        </div>
+
+        <button class="button" onclick="createTestDataWithToken()">🚀 Créer les données de test</button>
+        <button class="button" onclick="clearLog()">🧹 Effacer les logs</button>
+        
+        <div id="result"></div>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        async function createTestDataWithToken() {
+            const resultDiv = document.getElementById('result');
+            const token = document.getElementById('tokenInput').value.trim();
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error">❌ Veuillez entrer votre token JWT</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="info">⏳ Création des données de test en cours...</div>';
+            
+            try {
+                log('🔑 Utilisation du token fourni...');
+
+                // Créer une demande d'affiliation
+                log('📝 Création d\'une demande d\'affiliation...');
+                const demandeData = {
+                    raisonSociale: 'SONABHY SA',
+                    numeroRccm: 'BF-OUA-2018-B-12345',
+                    secteurActivite: 'Distribution carburants',
+                    effectif: 245,
+                    adresse: 'Zone Industrielle, Ouagadougou',
+                    representantLegal: 'M. OUEDRAOGO Jean',
+                    email: 'contact@sonabhy.bf',
+                    telephone: '+226 25 30 40 50',
+                    contactDrh: 'Jean OUEDRAOGO',
+                    chiffreAffaireAnnuel: 15000000000
+                };
+
+                const demandeResponse = await fetch('http://localhost:8080/api/demandes-affiliation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(demandeData)
+                });
+
+                if (!demandeResponse.ok) {
+                    const errorText = await demandeResponse.text();
+                    log(`❌ Erreur demande: ${demandeResponse.status} - ${errorText}`);
+                    throw new Error(`Erreur création demande: ${demandeResponse.status} - ${errorText}`);
+                }
+
+                const demande = await demandeResponse.json();
+                log(`✅ Demande d'affiliation créée avec ID: ${demande.id}`);
+
+                // Valider la demande d'affiliation
+                log('✅ Validation de la demande d\'affiliation...');
+                const validationResponse = await fetch(`http://localhost:8080/api/demandes-affiliation/${demande.id}/valider`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        commentaires: 'Demande validée pour test'
+                    })
+                });
+
+                if (!validationResponse.ok) {
+                    const errorText = await validationResponse.text();
+                    log(`⚠️ Erreur validation: ${validationResponse.status} - ${errorText}`);
+                    // Continue même si la validation échoue
+                }
+
+                // Créer un contrat basé sur cette demande
+                log('📄 Création d\'un contrat...');
+                const contratData = {
+                    demandeId: demande.id,
+                    typeContrat: 'INDUSTRIE_PETROLIERE',
+                    dateSignature: '2025-01-15',
+                    dateDebut: '2025-02-01',
+                    dateFin: '2026-01-31',
+                    zoneMedicale: 'Ouagadougou Nord',
+                    region: 'Centre'
+                };
+
+                const contratResponse = await fetch('http://localhost:8080/api/contrats', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(contratData)
+                });
+
+                if (!contratResponse.ok) {
+                    const errorText = await contratResponse.text();
+                    log(`❌ Erreur contrat: ${contratResponse.status} - ${errorText}`);
+                    throw new Error(`Erreur création contrat: ${contratResponse.status} - ${errorText}`);
+                }
+
+                const contrat = await contratResponse.json();
+                log(`✅ Contrat créé avec numéro: ${contrat.numeroContrat}`);
+
+                // Créer une deuxième entreprise pour avoir plus de données
+                log('📝 Création d\'une deuxième demande d\'affiliation...');
+                const demande2Data = {
+                    raisonSociale: 'BURKINA CONSTRUCTION SARL',
+                    numeroRccm: 'BF-OUA-2019-B-67890',
+                    secteurActivite: 'BTP et construction',
+                    effectif: 120,
+                    adresse: 'Secteur 15, Ouagadougou',
+                    representantLegal: 'Mme KONE Aminata',
+                    email: 'contact@burkina-construction.bf',
+                    telephone: '+226 25 35 45 55',
+                    contactDrh: 'Aminata KONE',
+                    chiffreAffaireAnnuel: 5000000000
+                };
+
+                const demande2Response = await fetch('http://localhost:8080/api/demandes-affiliation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(demande2Data)
+                });
+
+                if (demande2Response.ok) {
+                    const demande2 = await demande2Response.json();
+                    log(`✅ Deuxième demande créée avec ID: ${demande2.id}`);
+
+                    // Valider la deuxième demande
+                    await fetch(`http://localhost:8080/api/demandes-affiliation/${demande2.id}/valider`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            commentaires: 'Deuxième demande validée pour test'
+                        })
+                    });
+
+                    // Créer le deuxième contrat
+                    const contrat2Data = {
+                        demandeId: demande2.id,
+                        typeContrat: 'CONSTRUCTION',
+                        dateSignature: '2025-01-20',
+                        dateDebut: '2025-02-15',
+                        dateFin: '2026-02-14',
+                        zoneMedicale: 'Ouagadougou Sud',
+                        region: 'Centre'
+                    };
+
+                    const contrat2Response = await fetch('http://localhost:8080/api/contrats', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(contrat2Data)
+                    });
+
+                    if (contrat2Response.ok) {
+                        const contrat2 = await contrat2Response.json();
+                        log(`✅ Deuxième contrat créé avec numéro: ${contrat2.numeroContrat}`);
+                    }
+                }
+
+                log('🎉 Données de test créées avec succès !');
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        ✅ <strong>Données de test créées avec succès !</strong><br><br>
+                        📊 <strong>Ce qui a été créé :</strong><br>
+                        • 2 demandes d'affiliation<br>
+                        • 2 contrats actifs<br>
+                        • Entreprises : SONABHY SA et BURKINA CONSTRUCTION SARL<br><br>
+                        🚀 <strong>Vous pouvez maintenant :</strong><br>
+                        • Actualiser votre page "Gestion des contrats"<br>
+                        • Aller sur "Entreprises affiliées"<br>
+                        • Tester l'amendement des contrats<br>
+                        • Voir les statistiques mises à jour
+                    </div>
+                `;
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ <strong>Erreur lors de la création des données :</strong><br>
+                        ${error.message}<br><br>
+                        💡 <strong>Vérifiez que :</strong><br>
+                        • Le token JWT est valide et non expiré<br>
+                        • Vous êtes bien connecté comme Directeur Régional<br>
+                        • Le backend est démarré sur le port 8080
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
