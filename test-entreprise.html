@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Création Entreprise</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        button { padding: 10px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        input { margin: 5px; padding: 5px; width: 300px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Test Création Entreprise</h1>
+    
+    <div>
+        <h3>1. Login Employeur</h3>
+        <button onclick="loginEmployeur()">Se connecter</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div>
+        <h3>2. Créer Entreprise</h3>
+        <label>Nom:</label>
+        <input type="text" id="nom" value="Mon Entreprise SARL">
+        
+        <label>Email:</label>
+        <input type="email" id="email" value="contact@monentreprise.bf">
+        
+        <label>Téléphone:</label>
+        <input type="tel" id="telephone" value="+226 25 12 34 56">
+        
+        <label>Adresse:</label>
+        <input type="text" id="adresse" value="123 Avenue de la Paix, Ouagadougou">
+        
+        <label>Secteur d'activité:</label>
+        <input type="text" id="secteurActivite" value="Commerce">
+        
+        <label>Effectif:</label>
+        <input type="number" id="effectif" value="25">
+        
+        <label>Ville:</label>
+        <input type="text" id="ville" value="Ouagadougou">
+        
+        <br><br>
+        <button onclick="createEntreprise()">Créer Entreprise</button>
+        <div id="createResult"></div>
+    </div>
+
+    <div>
+        <h3>3. Lister Entreprises</h3>
+        <button onclick="listEntreprises()">Voir toutes les entreprises</button>
+        <div id="listResult"></div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        let token = '';
+
+        function showResult(elementId, content, isError = false) {
+            const div = document.getElementById(elementId);
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.innerHTML = '<pre>' + JSON.stringify(content, null, 2) + '</pre>';
+        }
+
+        async function loginEmployeur() {
+            try {
+                const response = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'employeur@test.com',
+                        password: 'password123'
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    token = data.token;
+                    showResult('loginResult', { message: 'Login réussi', user: data.user });
+                } else {
+                    showResult('loginResult', data, true);
+                }
+            } catch (error) {
+                showResult('loginResult', { error: error.message }, true);
+            }
+        }
+
+        async function createEntreprise() {
+            if (!token) {
+                showResult('createResult', { error: 'Veuillez vous connecter d\'abord' }, true);
+                return;
+            }
+
+            const entrepriseData = {
+                nom: document.getElementById('nom').value,
+                email: document.getElementById('email').value,
+                telephone: document.getElementById('telephone').value,
+                adresse: document.getElementById('adresse').value,
+                secteurActivite: document.getElementById('secteurActivite').value,
+                effectif: parseInt(document.getElementById('effectif').value),
+                ville: document.getElementById('ville').value,
+                codePostal: '01 BP 1234'
+            };
+
+            console.log('Données à envoyer:', entrepriseData);
+
+            try {
+                const response = await fetch(`${API}/entreprises`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(entrepriseData)
+                });
+
+                const data = await response.json();
+                console.log('Réponse serveur:', data);
+                
+                if (response.ok) {
+                    showResult('createResult', { message: 'Entreprise créée avec succès', entreprise: data });
+                } else {
+                    showResult('createResult', { error: data }, true);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showResult('createResult', { error: error.message }, true);
+            }
+        }
+
+        async function listEntreprises() {
+            try {
+                const response = await fetch(`${API}/entreprises`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('listResult', { message: `${data.length} entreprise(s) trouvée(s)`, entreprises: data });
+                } else {
+                    showResult('listResult', data, true);
+                }
+            } catch (error) {
+                showResult('listResult', { error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>

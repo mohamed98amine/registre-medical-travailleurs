@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Chargement Données MySQL</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        button { padding: 10px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        select { width: 300px; padding: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test Chargement Données MySQL</h1>
+    
+    <div>
+        <h3>1. Créer des données de test</h3>
+        <button onclick="createTestData()">Créer Données Test</button>
+        <div id="createResult"></div>
+    </div>
+
+    <div>
+        <h3>2. Charger Médecins</h3>
+        <button onclick="loadMedecins()">Charger Médecins</button>
+        <br>
+        <select id="medecinSelect" size="5">
+            <option>Cliquez sur "Charger Médecins"</option>
+        </select>
+        <div id="medecinsResult"></div>
+    </div>
+
+    <div>
+        <h3>3. Charger Entreprises</h3>
+        <button onclick="loadEntreprises()">Charger Entreprises</button>
+        <br>
+        <select id="entrepriseSelect" size="5">
+            <option>Cliquez sur "Charger Entreprises"</option>
+        </select>
+        <div id="entreprisesResult"></div>
+    </div>
+
+    <div>
+        <h3>4. Compter les données</h3>
+        <button onclick="countData()">Compter Données</button>
+        <div id="countResult"></div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+
+        function showResult(elementId, content, isError = false) {
+            const div = document.getElementById(elementId);
+            div.className = 'result ' + (isError ? 'error' : 'success');
+            div.innerHTML = '<pre>' + JSON.stringify(content, null, 2) + '</pre>';
+        }
+
+        async function createTestData() {
+            try {
+                const response = await fetch(`${API}/test-data/create-sample-data`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                showResult('createResult', data);
+            } catch (error) {
+                showResult('createResult', { error: error.message }, true);
+            }
+        }
+
+        async function loadMedecins() {
+            try {
+                const response = await fetch(`${API}/medecins`);
+                const medecins = await response.json();
+                
+                const select = document.getElementById('medecinSelect');
+                select.innerHTML = '';
+                
+                if (medecins.length === 0) {
+                    select.innerHTML = '<option>Aucun médecin trouvé</option>';
+                } else {
+                    medecins.forEach(medecin => {
+                        const option = document.createElement('option');
+                        option.value = medecin.id;
+                        option.textContent = `Dr. ${medecin.prenom} ${medecin.nom} - ${medecin.specialite}`;
+                        select.appendChild(option);
+                    });
+                }
+                
+                showResult('medecinsResult', { 
+                    message: `${medecins.length} médecin(s) chargé(s)`,
+                    medecins: medecins 
+                });
+            } catch (error) {
+                showResult('medecinsResult', { error: error.message }, true);
+            }
+        }
+
+        async function loadEntreprises() {
+            try {
+                const response = await fetch(`${API}/entreprises`);
+                const entreprises = await response.json();
+                
+                const select = document.getElementById('entrepriseSelect');
+                select.innerHTML = '';
+                
+                if (entreprises.length === 0) {
+                    select.innerHTML = '<option>Aucune entreprise trouvée</option>';
+                } else {
+                    entreprises.forEach(entreprise => {
+                        const option = document.createElement('option');
+                        option.value = entreprise.id;
+                        option.textContent = `${entreprise.nom} - ${entreprise.secteurActivite}`;
+                        select.appendChild(option);
+                    });
+                }
+                
+                showResult('entreprisesResult', { 
+                    message: `${entreprises.length} entreprise(s) chargée(s)`,
+                    entreprises: entreprises 
+                });
+            } catch (error) {
+                showResult('entreprisesResult', { error: error.message }, true);
+            }
+        }
+
+        async function countData() {
+            try {
+                const response = await fetch(`${API}/test-data/count`);
+                const data = await response.json();
+                showResult('countResult', data);
+            } catch (error) {
+                showResult('countResult', { error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>

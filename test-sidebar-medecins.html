@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sidebar Médecins</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="test-container">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">✅ Test Sidebar - Médecins</h1>
+        
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔄 Modifications Apportées</h2>
+            <div class="status success">
+                <strong>✅ Remplacement "Travailleurs" par "Médecins" :</strong>
+                <ul class="mt-2 ml-4 list-disc">
+                    <li>Dans la sidebar Chef de Zone</li>
+                    <li>Dans le dashboard (bouton d'action rapide)</li>
+                    <li>Icône changée : Stethoscope au lieu de Users</li>
+                    <li>Route ajoutée : /medecins</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">📋 Structure de la Sidebar Chef de Zone</h2>
+            
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-gray-900 mb-3">Navigation Chef de Zone :</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 bg-blue-500 rounded"></span>
+                        <span><strong>Tableau de bord</strong> - Dashboard unifié</span>
+                    </div>
+                    <div class="ml-6 text-gray-600">
+                        <div class="font-medium text-gray-500 uppercase text-xs tracking-wider">Gestion</div>
+                        <div class="ml-4 space-y-1">
+                            <div>• Visites médicales</div>
+                            <div>• <strong>Médecins</strong> (nouveau)</div>
+                            <div>• Créer entreprise</div>
+                            <div>• Demande affiliation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">⚡ Actions Rapides Dashboard</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-blue-600 text-white p-4 rounded-lg text-center">
+                    <div class="text-2xl mb-2">🏢</div>
+                    <h4 class="font-semibold">Ajouter Entreprise</h4>
+                    <p class="text-blue-100 text-sm">Nouvelle affiliation</p>
+                </div>
+                
+                <div class="bg-emerald-600 text-white p-4 rounded-lg text-center">
+                    <div class="text-2xl mb-2">👨‍⚕️</div>
+                    <h4 class="font-semibold">Ajouter Médecin</h4>
+                    <p class="text-emerald-100 text-sm">Nouveau médecin</p>
+                </div>
+                
+                <div class="bg-green-600 text-white p-4 rounded-lg text-center">
+                    <div class="text-2xl mb-2">📅</div>
+                    <h4 class="font-semibold">Visites Médicales</h4>
+                    <p class="text-green-100 text-sm">Gérer les visites</p>
+                </div>
+                
+                <div class="bg-purple-600 text-white p-4 rounded-lg text-center">
+                    <div class="text-2xl mb-2">🩺</div>
+                    <h4 class="font-semibold">Médecins</h4>
+                    <p class="text-purple-100 text-sm">Gérer médecins</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🧪 Tests à Effectuer</h2>
+            
+            <div class="status info">
+                <strong>Test 1 - Sidebar :</strong>
+                <ol class="mt-2 ml-4 list-decimal">
+                    <li>Se connecter en tant que Chef de Zone</li>
+                    <li>Vérifier que la sidebar affiche "Médecins" au lieu de "Travailleurs"</li>
+                    <li>Vérifier que l'icône est un stéthoscope</li>
+                    <li>Cliquer sur "Médecins" → doit naviguer vers /medecins</li>
+                </ol>
+            </div>
+            
+            <div class="status info">
+                <strong>Test 2 - Dashboard :</strong>
+                <ol class="mt-2 ml-4 list-decimal">
+                    <li>Aller sur le tableau de bord</li>
+                    <li>Vérifier que le bouton "Médecins" s'affiche dans les actions rapides</li>
+                    <li>Cliquer sur "Médecins" → doit naviguer vers /medecins</li>
+                    <li>Vérifier que l'icône est un stéthoscope</li>
+                </ol>
+            </div>
+            
+            <div class="status info">
+                <strong>Test 3 - Navigation :</strong>
+                <ol class="mt-2 ml-4 list-decimal">
+                    <li>Vérifier que la route /medecins fonctionne</li>
+                    <li>Confirmer que seuls les CHEF_DE_ZONE et DIRECTEUR_REGIONAL y ont accès</li>
+                    <li>Tester la navigation depuis la sidebar et le dashboard</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">🔧 Détails Techniques</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h3 class="font-semibold text-blue-900 mb-2">Sidebar (src/components/Sidebar.tsx)</h3>
+                    <ul class="text-sm text-blue-800 space-y-1">
+                        <li>• Ligne 219-224 : NavLink vers /medecins</li>
+                        <li>• Icône : Stethoscope</li>
+                        <li>• Texte : "Médecins"</li>
+                        <li>• Rôle : CHEF_DE_ZONE uniquement</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h3 class="font-semibold text-green-900 mb-2">Dashboard (src/pages/DashboardChefZone.tsx)</h3>
+                    <ul class="text-sm text-green-800 space-y-1">
+                        <li>• Ligne 397-403 : Bouton Médecins</li>
+                        <li>• Navigation : navigate('/medecins')</li>
+                        <li>• Icône : Stethoscope</li>
+                        <li>• Couleur : purple-600</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h3 class="font-semibold text-purple-900 mb-2">Router (src/AppRouter.tsx)</h3>
+                    <ul class="text-sm text-purple-800 space-y-1">
+                        <li>• Ligne 148-156 : Route /medecins</li>
+                        <li>• Rôles autorisés : CHEF_DE_ZONE, DIRECTEUR_REGIONAL</li>
+                        <li>• Composant : TravailleursList (temporaire)</li>
+                        <li>• Layout : PrivateLayout</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <h3 class="font-semibold text-orange-900 mb-2">Imports Nettoyés</h3>
+                    <ul class="text-sm text-orange-800 space-y-1">
+                        <li>• Suppression des imports inutilisés</li>
+                        <li>• Conservation de Stethoscope</li>
+                        <li>• Suppression de Users dans certains contextes</li>
+                        <li>• Code plus propre</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">⚠️ Points d'Attention</h2>
+            
+            <div class="status warning">
+                <strong>Note importante :</strong>
+                <ul class="mt-2 ml-4 list-disc">
+                    <li>La route /medecins utilise temporairement TravailleursList</li>
+                    <li>Il faudra créer un composant MedecinsList spécifique</li>
+                    <li>Vérifier que les permissions sont correctes</li>
+                    <li>Tester avec différents rôles d'utilisateur</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold mb-4">✅ Résumé des Changements</h2>
+            
+            <div class="feature-card">
+                <h3 class="text-lg font-semibold mb-3">Modifications Effectuées</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <strong>✅ Sidebar :</strong><br>
+                        Travailleurs → Médecins<br>
+                        Icône Users → Stethoscope<br>
+                        Route /travailleurs → /medecins
+                    </div>
+                    <div>
+                        <strong>✅ Dashboard :</strong><br>
+                        Bouton Travailleurs → Médecins<br>
+                        Navigation mise à jour<br>
+                        Icône cohérente
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-white bg-opacity-20 rounded-lg">
+                    <strong>Route ajoutée :</strong> /medecins accessible aux CHEF_DE_ZONE et DIRECTEUR_REGIONAL
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('✅ Sidebar Médecins Test Ready');
+        console.log('🔄 Test remplacement Travailleurs → Médecins');
+        console.log('🧭 Test navigation /medecins');
+        console.log('🎯 Test permissions CHEF_DE_ZONE');
+    </script>
+</body>
+</html>
+
+
+
+
+
+

@@ -37,6 +37,11 @@ public class VisiteMedicale {
     @JsonIgnoreProperties({"visitesMedicales", "hibernateLazyInitializer", "handler"})
     private Medecin medecin;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employeur_id")
+    @JsonIgnoreProperties({"visitesMedicales", "hibernateLazyInitializer", "handler"})
+    private Employeur employeur;
+
     @NotNull
     @Column(name = "date_visite", nullable = false)
     private LocalDateTime dateVisite;
@@ -112,6 +117,14 @@ public class VisiteMedicale {
 
     public void setMedecin(Medecin medecin) {
         this.medecin = medecin;
+    }
+
+    public Employeur getEmployeur() {
+        return employeur;
+    }
+
+    public void setEmployeur(Employeur employeur) {
+        this.employeur = employeur;
     }
 
     public LocalDateTime getDateVisite() {

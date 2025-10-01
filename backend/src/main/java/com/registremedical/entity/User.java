@@ -1,5 +1,7 @@
 package com.registremedical.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.registremedical.enums.UserRole;
 import com.registremedical.enums.SpecialiteMedicale;
@@ -26,6 +28,7 @@ public class User {
 
     @NotBlank
     @Size(max = 100)
+    @JsonIgnore // Ne pas exposer le mot de passe dans les réponses JSON
     private String password;
 
     @NotBlank
@@ -39,22 +42,25 @@ public class User {
     private String telephone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 50)
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
     private SpecialiteMedicale specialite;
 
     @Column(name = "created_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
 
     @Column(name = "active", nullable = false)
     private Boolean active = true;
 
     @Column(name = "date_creation")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateCreation;
 
     // Relations temporairement commentées pour éviter les erreurs de sérialisation
@@ -199,5 +205,15 @@ public class User {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // Helper method to get the creation date (prioritize createdAt, fallback to dateCreation)
+    public LocalDateTime getCreationDate() {
+        return createdAt != null ? createdAt : dateCreation;
+    }
+
+    // Helper method to get full name
+    public String getFullName() {
+        return (prenom != null ? prenom + " " : "") + nom;
     }
 }

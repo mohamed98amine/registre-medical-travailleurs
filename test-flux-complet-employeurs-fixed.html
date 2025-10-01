@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flux Complet - Employeurs (Corrigé)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .step { background: #fff3e0; color: #f57c00; }
+        .warning { background: #fff8e1; color: #f57c00; border: 2px solid #ff9800; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 3px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .status.online { background: #e8f5e8; color: #2e7d32; }
+        .status.offline { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Flux Complet - Employeurs (Corrigé)</h1>
+    
+    <div class="status offline" id="backendStatus">
+        ⏳ Vérification du backend Spring Boot...
+    </div>
+    
+    <div class="status offline" id="frontendStatus">
+        ⏳ Vérification du frontend...
+    </div>
+    
+    <div class="section">
+        <h3>📋 Instructions</h3>
+        <ol>
+            <li><strong>Backend :</strong> Assurez-vous que Spring Boot est démarré sur <code>http://localhost:8080</code></li>
+            <li><strong>Frontend :</strong> Assurez-vous que le serveur de développement est démarré sur <code>http://localhost:5173</code></li>
+            <li><strong>Test :</strong> Utilisez ce fichier via <code>http://localhost:5173/test-flux-complet-employeurs-fixed.html</code></li>
+        </ol>
+    </div>
+    
+    <div class="grid">
+        <div class="section">
+            <h3>1️⃣ Créer un employeur</h3>
+            <input type="text" id="nom" placeholder="Nom de l'employeur" value="Entreprise Test Flux">
+            <input type="email" id="email" placeholder="Email" value="test.flux@example.com">
+            <input type="tel" id="telephone" placeholder="Téléphone" value="66123456">
+            <select id="statut">
+                <option value="Actif">Actif</option>
+                <option value="Inactif">Inactif</option>
+            </select>
+            <button onclick="creerEmployeur()">✅ Créer Employeur</button>
+            <div id="result1" class="result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>2️⃣ Vérifier la liste des employeurs</h3>
+            <button onclick="chargerEmployeurs()">🔄 Charger la liste</button>
+            <div id="result2" class="result"></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>3️⃣ Test de programmation de visite</h3>
+        <p>Simule la création d'une visite avec le nouvel employeur</p>
+        <input type="text" id="typeVisite" placeholder="Type de visite" value="Périodique">
+        <input type="date" id="dateVisite" placeholder="Date de visite">
+        <input type="time" id="heureVisite" placeholder="Heure de visite" value="09:00">
+        <button onclick="creerVisite()">📅 Créer Visite</button>
+        <div id="result3" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>4️⃣ Vérifier les visites créées</h3>
+        <button onclick="chargerVisites()">📋 Charger les visites</button>
+        <div id="result4" class="result"></div>
+    </div>
+
+    <script>
+        // Configuration des URLs
+        const BACKEND_URL = 'http://localhost:8080';
+        const FRONTEND_URL = 'http://localhost:5174';
+        
+        let employeurId = null;
+        let medecinId = null;
+        let entrepriseId = null;
+        
+        // Vérifier le statut des serveurs au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+            
+            // Initialiser les dates par défaut
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dateVisite').value = tomorrow.toISOString().split('T')[0];
+        });
+        
+        async function checkServerStatus() {
+            // Vérifier le backend
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/employeurs`, { 
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                document.getElementById('backendStatus').className = 'status online';
+                document.getElementById('backendStatus').innerHTML = '✅ Backend Spring Boot : En ligne (http://localhost:8080)';
+            } catch (error) {
+                document.getElementById('backendStatus').className = 'status offline';
+                document.getElementById('backendStatus').innerHTML = '❌ Backend Spring Boot : Hors ligne - Démarrez le backend avec <code>cd backend && mvn spring-boot:run</code>';
+            }
+            
+            // Vérifier le frontend
+            if (window.location.protocol === 'http:' && window.location.hostname === 'localhost') {
+                document.getElementById('frontendStatus').className = 'status online';
+                document.getElementById('frontendStatus').innerHTML = '✅ Frontend : En ligne via serveur HTTP';
+            } else {
+                document.getElementById('frontendStatus').className = 'status offline';
+                document.getElementById('frontendStatus').innerHTML = '⚠️ Frontend : Ouvrez ce fichier via <code>http://localhost:5174/test-flux-complet-employeurs-fixed.html</code>';
+            }
+        }
+        
+        async function creerEmployeur() {
+            const nom = document.getElementById('nom').value;
+            const email = document.getElementById('email').value;
+            const telephone = document.getElementById('telephone').value;
+            const statut = document.getElementById('statut').value;
+            const resultDiv = document.getElementById('result1');
+            
+            resultDiv.className = 'result step';
+            resultDiv.innerHTML = '⏳ Création de l\'employeur en cours...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/employeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nom, email, telephone, statut })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    employeurId = result.id;
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Employeur créé avec succès!<br>
+                        <strong>ID:</strong> ${result.id}<br>
+                        <strong>Nom:</strong> ${result.nom}<br>
+                        <strong>Email:</strong> ${result.email}<br>
+                        <strong>Statut:</strong> ${result.statut}<br>
+                        <strong>Active:</strong> ${result.active}`;
+                        
+                    // Auto-charger la liste des employeurs
+                    setTimeout(() => {
+                        chargerEmployeurs();
+                    }, 1000);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}<br>
+                    <strong>Vérifiez que :</strong><br>
+                    • Le backend Spring Boot est démarré sur http://localhost:8080<br>
+                    • Ce fichier est ouvert via http://localhost:5174`;
+            }
+        }
+        
+        async function chargerEmployeurs() {
+            const resultDiv = document.getElementById('result2');
+            
+            resultDiv.className = 'result step';
+            resultDiv.innerHTML = '⏳ Chargement de la liste des employeurs...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/employeurs`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    let html = `✅ <strong>${result.length}</strong> employeur(s) trouvé(s):<br><br>`;
+                    
+                    result.forEach(employeur => {
+                        const isNew = employeur.id === employeurId;
+                        html += `<div style="border: 1px solid #ddd; margin: 5px 0; padding: 10px; ${isNew ? 'background: #e8f5e8;' : ''}">
+                            <strong>${employeur.nom}</strong> ${isNew ? '🆕' : ''}<br>
+                            Email: ${employeur.email}<br>
+                            Statut: ${employeur.statut}
+                        </div>`;
+                    });
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        async function creerVisite() {
+            if (!employeurId) {
+                document.getElementById('result3').className = 'result error';
+                document.getElementById('result3').innerHTML = '❌ Veuillez d\'abord créer un employeur';
+                return;
+            }
+            
+            const typeVisite = document.getElementById('typeVisite').value;
+            const dateVisite = document.getElementById('dateVisite').value;
+            const heureVisite = document.getElementById('heureVisite').value;
+            const resultDiv = document.getElementById('result3');
+            
+            resultDiv.className = 'result step';
+            resultDiv.innerHTML = '⏳ Création de la visite en cours...';
+            
+            try {
+                // Charger les médecins et entreprises pour avoir des IDs valides
+                const [medecinsResponse, entreprisesResponse] = await Promise.all([
+                    fetch(`${BACKEND_URL}/api/medecins`),
+                    fetch(`${BACKEND_URL}/api/entreprises`)
+                ]);
+                
+                const medecins = await medecinsResponse.json();
+                const entreprises = await entreprisesResponse.json();
+                
+                if (medecins.length === 0 || entreprises.length === 0) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = '❌ Aucun médecin ou entreprise disponible';
+                    return;
+                }
+                
+                medecinId = medecins[0].id;
+                entrepriseId = entreprises[0].id;
+                
+                const response = await fetch(`${BACKEND_URL}/api/visites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        typeVisite,
+                        dateVisite,
+                        heureVisite,
+                        employeurId,
+                        medecinId,
+                        entrepriseId,
+                        statut: 'Prévue'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Visite créée avec succès!<br>
+                        <strong>ID:</strong> ${result.id}<br>
+                        <strong>Type:</strong> ${result.type}<br>
+                        <strong>Date:</strong> ${result.date}<br>
+                        <strong>Heure:</strong> ${result.heure}<br>
+                        <strong>Employeur:</strong> ${result.employeur?.nom}<br>
+                        <strong>Médecin:</strong> ${result.medecin?.nom}`;
+                        
+                    // Auto-charger les visites
+                    setTimeout(() => {
+                        chargerVisites();
+                    }, 1000);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        async function chargerVisites() {
+            const resultDiv = document.getElementById('result4');
+            
+            resultDiv.className = 'result step';
+            resultDiv.innerHTML = '⏳ Chargement des visites...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/visites`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    let html = `✅ <strong>${result.length}</strong> visite(s) trouvée(s):<br><br>`;
+                    
+                    result.forEach(visite => {
+                        const isNew = visite.employeur?.id === employeurId;
+                        html += `<div style="border: 1px solid #ddd; margin: 5px 0; padding: 10px; ${isNew ? 'background: #e8f5e8;' : ''}">
+                            <strong>${visite.type}</strong> ${isNew ? '🆕' : ''}<br>
+                            Date: ${visite.date} ${visite.heure}<br>
+                            Employeur: ${visite.employeur?.nom || 'N/A'}<br>
+                            Médecin: ${visite.medecin?.nom || 'N/A'}<br>
+                            Statut: ${visite.statut}
+                        </div>`;
+                    });
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        // Auto-charger les données au chargement
+        window.onload = function() {
+            setTimeout(() => {
+                chargerEmployeurs();
+            }, 2000); // Attendre que les serveurs soient prêts
+        };
+    </script>
+</body>
+</html>

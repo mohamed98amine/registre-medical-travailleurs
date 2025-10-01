@@ -10,8 +10,8 @@ INSERT IGNORE INTO users (email, password, nom, prenom, telephone, role, actif) 
 ('test-employeur@test.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Test', 'Employeur', '+226 70 00 00 99', 'EMPLOYEUR', TRUE);
 
 -- 3. Créer une entreprise pour l'employeur de test
-INSERT IGNORE INTO entreprises (nom, siret, adresse, ville, code_postal, telephone, email, employeur_id) VALUES
-('Entreprise Test Workflow', '999999999', '123 Rue du Test', 'Ouagadougou', '01 BP 999', '+226 25 99 99 99', 'test@test-entreprise.bf', (SELECT id FROM users WHERE email = 'test-employeur@test.com'));
+INSERT IGNORE INTO entreprises (nom, adresse, ville, code_postal, telephone, email, employeur_id) VALUES
+('Entreprise Test Workflow', '123 Rue du Test', 'Ouagadougou', '01 BP 999', '+226 25 99 99 99', 'test@test-entreprise.bf', (SELECT id FROM users WHERE email = 'test-employeur@test.com'));
 
 -- 4. Créer une demande d'affiliation de test
 SELECT '2. Création d\'une demande d\'affiliation de test:' as etape;

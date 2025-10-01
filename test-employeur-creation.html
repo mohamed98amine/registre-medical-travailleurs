@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Création Employeur</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Test Création Employeur</h1>
+    
+    <div class="section">
+        <h3>Créer un employeur</h3>
+        <input type="text" id="nom" placeholder="Nom de l'employeur" value="Test Employeur">
+        <input type="email" id="email" placeholder="Email" value="test@example.com">
+        <input type="tel" id="telephone" placeholder="Téléphone" value="66123456">
+        <select id="statut">
+            <option value="Actif">Actif</option>
+            <option value="Inactif">Inactif</option>
+        </select>
+        <button onclick="creerEmployeur()">Créer Employeur</button>
+        <div id="result" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>Liste des employeurs</h3>
+        <button onclick="chargerEmployeurs()">Charger la liste</button>
+        <div id="liste" class="result"></div>
+    </div>
+
+    <script>
+        async function creerEmployeur() {
+            const nom = document.getElementById('nom').value;
+            const email = document.getElementById('email').value;
+            const telephone = document.getElementById('telephone').value;
+            const statut = document.getElementById('statut').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = '⏳ Création en cours...';
+            
+            try {
+                const response = await fetch('/api/employeurs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nom, email, telephone, statut })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Employeur créé avec succès:<br>
+                        ID: ${result.id}<br>
+                        Nom: ${result.nom}<br>
+                        Email: ${result.email}<br>
+                        Téléphone: ${result.telephone}<br>
+                        Statut: ${result.statut}<br>
+                        Active: ${result.active}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        async function chargerEmployeurs() {
+            const listeDiv = document.getElementById('liste');
+            
+            try {
+                const response = await fetch('/api/employeurs');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    listeDiv.className = 'result success';
+                    let html = `✅ ${result.length} employeur(s) trouvé(s):<br><br>`;
+                    
+                    result.forEach(employeur => {
+                        html += `<div style="border: 1px solid #ddd; margin: 5px 0; padding: 10px;">
+                            <strong>${employeur.nom}</strong><br>
+                            Email: ${employeur.email}<br>
+                            Téléphone: ${employeur.telephone}<br>
+                            Statut: ${employeur.statut}<br>
+                            Active: ${employeur.active}
+                        </div>`;
+                    });
+                    
+                    listeDiv.innerHTML = html;
+                } else {
+                    listeDiv.className = 'result error';
+                    listeDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                listeDiv.className = 'result error';
+                listeDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        // Auto-charger la liste au chargement
+        window.onload = function() {
+            chargerEmployeurs();
+        };
+    </script>
+</body>
+</html>
+
+
+
+

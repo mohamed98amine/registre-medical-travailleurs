@@ -13,3 +13,10 @@ ON DUPLICATE KEY UPDATE email = email;
 
 -- Vérifier que les utilisateurs ont été créés
 SELECT id, nom, prenom, email, role FROM users WHERE email IN ('employeur@test.com', 'directeur@test.com');
+
+
+
+
+
+
+

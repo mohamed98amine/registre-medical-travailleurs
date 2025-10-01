@@ -24,28 +24,30 @@ export interface Entreprise {
 }
 
 export interface EntrepriseFormData {
-  raisonSociale: string;
+  nom: string;
   secteurActivite: string;
   effectif: number;
-  adresse: string;
-  telephone: string;
   email: string;
-  zoneAffectation: string;
+  telephone: string;
+  adresse: string;
+  ville?: string;
+  codePostal?: string;
 }
 
 export interface Travailleur {
   id: number;
   nom: string;
   prenom: string;
-  matricule: string;
   dateNaissance: string;
-  poste: string;
-  dateEmbauche: string;
-  expositionsProfessionnelles: string[];
-  telephone: string;
-  email: string;
+  poste?: string;
+  telephone?: string;
+  email?: string;
   adresse: string;
-  entreprise: Entreprise;
+  ville: string;
+  codePostal: string;
+  entreprise?: Entreprise;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Medecin {
@@ -56,7 +58,10 @@ export interface Medecin {
   telephone: string;
   email: string;
   adresse: string;
-  user: User;
+  ville: string;
+  codePostal: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface VisiteMedicale {

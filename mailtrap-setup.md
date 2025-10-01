@@ -46,3 +46,4 @@ spring.mail.default-encoding=UTF-8
 - ✅ Test immédiat
 - ✅ Interface de visualisation
 - ✅ Gratuit jusqu'à 100 emails/mois
+

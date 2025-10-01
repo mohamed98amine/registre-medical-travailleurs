@@ -18,3 +18,10 @@ ON DUPLICATE KEY UPDATE raison_sociale = raison_sociale;
 INSERT INTO demandes_affiliation (id, raison_sociale, numero_rccm, secteur_activite, effectif, adresse, representant_legal, email, telephone, contact_drh, statut, commentaires, date_creation, date_modification, employeur_id, directeur_regional_id)
 VALUES (2, 'SARL Construction Plus', 'RCCM-CONST-002', 'Construction', 25, 'Bobo-Dioulasso, Burkina Faso', 'Amadou Traore', 'contact@constructionplus.bf', '+226 76 54 32 10', 'Fatouma Ouedraogo', 'EN_COURS', 'En cours de traitement', NOW(), NOW(), 1, 2)
 ON DUPLICATE KEY UPDATE raison_sociale = raison_sociale;
+
+
+
+
+
+
+

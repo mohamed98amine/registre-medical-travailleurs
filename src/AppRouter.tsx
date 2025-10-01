@@ -28,13 +28,32 @@ import GestionZonesGPS from './pages/GestionZonesGPS';
 import CarteZonesBurkinaFaso from './pages/CarteZonesBurkinaFaso';
 import TravailleursList from './pages/TravailleursList';
 import TravailleurForm from './pages/TravailleurForm';
-import VisitesMedicalesList from './pages/VisitesMedicalesList.tsx';
+import VisitesMedicales from './pages/VisitesMedicales';
 import VisiteMedicaleForm from './pages/VisiteMedicaleForm';
 import EntrepriseForm from './pages/EntrepriseForm';
 import DemandeVisiteForm from './pages/DemandeVisiteForm';
 import DemandesVisiteList from './pages/DemandesVisiteList';
 import DemandeAffiliationEmployeur from './pages/DemandeAffiliationEmployeur';
 import MesDemandesAffiliation from './pages/MesDemandesAffiliation';
+import DashboardChefZone from './pages/DashboardChefZone';
+import MedecinsList from './pages/MedecinsList';
+import MedecinForm from './pages/MedecinForm';
+import EntreprisesList from './pages/EntreprisesList';
+import MedecinEntrepriseAssignment from './pages/MedecinEntrepriseAssignment';
+import ProgrammerVisiteUnifie from './pages/ProgrammerVisiteUnifie';
+import GestionEmployeurs from './pages/GestionEmployeurs';
+import GestionMedecins from './pages/GestionMedecins';
+import Notifications from './pages/Notifications';
+import SaisieResultats from './pages/SaisieResultats';
+import DossierMedical from './pages/DossierMedical';
+import DisponibiliteMedecin from './pages/DisponibiliteMedecin';
+import Certificats from './pages/Certificats';
+import EntreprisesMedecin from './pages/EntreprisesMedecin';
+import MedecinsDisponibles from './pages/MedecinsDisponibles';
+import MesConsultations from './pages/MesConsultations';
+import NotificationsEmployeur from './pages/NotificationsEmployeur';
+import MesDemandesEmployeur from './pages/MesDemandesEmployeur';
+import CertificatsEmployeur from './pages/CertificatsEmployeur';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +71,9 @@ const RoleDashboard: React.FC = () => {
   }
   if (user?.role === 'DIRECTEUR_REGIONAL') {
     return <DashboardDirecteur />;
+  }
+  if (user?.role === 'CHEF_DE_ZONE') {
+    return <DashboardChefZone />;
   }
   return <DashboardEmployeur />;
 };
@@ -140,6 +162,61 @@ const AppRouter: React.FC = () => {
               } 
             />
             
+            <Route
+              path="/medecins"
+              element={
+                <ProtectedRoute allowedRoles={['CHEF_DE_ZONE', 'DIRECTEUR_REGIONAL', 'ADMIN']}>
+                  <PrivateLayout>
+                    <MedecinsList />
+                  </PrivateLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/medecins/nouveau"
+              element={
+                <ProtectedRoute allowedRoles={['CHEF_DE_ZONE', 'DIRECTEUR_REGIONAL', 'ADMIN']}>
+                  <PrivateLayout>
+                    <MedecinForm />
+                  </PrivateLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/medecins/:id/edit"
+              element={
+                <ProtectedRoute allowedRoles={['CHEF_DE_ZONE', 'DIRECTEUR_REGIONAL', 'ADMIN']}>
+                  <PrivateLayout>
+                    <MedecinForm />
+                  </PrivateLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/medecins/:id"
+              element={
+                <ProtectedRoute allowedRoles={['CHEF_DE_ZONE', 'DIRECTEUR_REGIONAL', 'ADMIN']}>
+                  <PrivateLayout>
+                    <MedecinForm />
+                  </PrivateLayout>
+                </ProtectedRoute>
+              }
+            />
+            
+            <Route 
+              path="/assignation-medecin" 
+              element={
+                <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                  <PrivateLayout>
+                    <MedecinEntrepriseAssignment />
+                  </PrivateLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route 
               path="/travailleurs/nouveau" 
               element={
@@ -165,9 +242,9 @@ const AppRouter: React.FC = () => {
             <Route 
               path="/visites-medicales" 
               element={
-                <ProtectedRoute allowedRoles={['EMPLOYEUR', 'MEDECIN']}>
+                <ProtectedRoute allowedRoles={['EMPLOYEUR', 'MEDECIN', 'CHEF_DE_ZONE']}>
                   <PrivateLayout>
-                    <VisitesMedicalesList />
+                    <VisitesMedicales />
                   </PrivateLayout>
                 </ProtectedRoute>
               } 
@@ -176,9 +253,9 @@ const AppRouter: React.FC = () => {
             <Route 
               path="/visites-medicales/nouvelle" 
               element={
-                <ProtectedRoute allowedRoles={['EMPLOYEUR']}>
+                <ProtectedRoute allowedRoles={['EMPLOYEUR', 'CHEF_DE_ZONE']}>
                   <PrivateLayout>
-                    <VisiteMedicaleForm />
+                    <ProgrammerVisiteUnifie />
                   </PrivateLayout>
                 </ProtectedRoute>
               } 
@@ -198,7 +275,7 @@ const AppRouter: React.FC = () => {
             <Route 
               path="/entreprises/nouvelle" 
               element={
-                <ProtectedRoute allowedRoles={['EMPLOYEUR']}>
+                <ProtectedRoute allowedRoles={['EMPLOYEUR', 'CHEF_DE_ZONE']}>
                   <PrivateLayout>
                     <EntrepriseForm />
                   </PrivateLayout>
@@ -232,7 +309,7 @@ const AppRouter: React.FC = () => {
             <Route 
               path="/demande-affiliation" 
               element={
-                <ProtectedRoute allowedRoles={['EMPLOYEUR']}>
+                <ProtectedRoute allowedRoles={['EMPLOYEUR', 'CHEF_DE_ZONE']}>
                   <PrivateLayout>
                     <DemandeAffiliationEmployeur />
                   </PrivateLayout>
@@ -400,7 +477,184 @@ const AppRouter: React.FC = () => {
               </ProtectedRoute>
             }
           />
-            
+          <Route
+            path="/dashboard-chef-zone"
+            element={
+              <ProtectedRoute allowedRoles={['DIRECTEUR_REGIONAL', 'CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <DashboardChefZone />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+
+          {/* Routes pour les entreprises */}
+          <Route
+            path="/entreprises"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <EntreprisesList />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/entreprises/ajouter"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <EntrepriseForm />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/entreprises/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <EntrepriseForm />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/employeurs"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <GestionEmployeurs />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/gestion-medecins"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE']}>
+                <PrivateLayout>
+                  <GestionMedecins />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute allowedRoles={['EMPLOYEUR', 'MEDECIN']}>
+                <PrivateLayout>
+                  <Notifications />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/saisie-resultats/:visiteId"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN']}>
+                <PrivateLayout>
+                  <SaisieResultats />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dossier-medical/:employeurId"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN']}>
+                <PrivateLayout>
+                  <DossierMedical />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/disponibilite-medecin"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN']}>
+                <PrivateLayout>
+                  <DisponibiliteMedecin />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/certificats"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN', 'EMPLOYEUR']}>
+                <PrivateLayout>
+                  <CertificatsEmployeur />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/entreprises-medecin"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN']}>
+                <PrivateLayout>
+                  <EntreprisesMedecin />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/chef-zone/medecins-disponibles"
+            element={
+              <ProtectedRoute allowedRoles={['CHEF_DE_ZONE', 'MEDECIN']}>
+                <PrivateLayout>
+                  <MedecinsDisponibles />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/mes-consultations"
+            element={
+              <ProtectedRoute allowedRoles={['MEDECIN']}>
+                <PrivateLayout>
+                  <MesConsultations />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications-employeur"
+            element={
+              <ProtectedRoute allowedRoles={['EMPLOYEUR']}>
+                <PrivateLayout>
+                  <NotificationsEmployeur />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/mes-demandes-employeur"
+            element={
+              <ProtectedRoute allowedRoles={['EMPLOYEUR']}>
+                <PrivateLayout>
+                  <MesDemandesEmployeur />
+                </PrivateLayout>
+              </ProtectedRoute>
+            }
+          />
+
             {/* Route par défaut */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

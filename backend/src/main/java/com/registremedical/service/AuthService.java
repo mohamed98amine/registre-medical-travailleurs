@@ -48,15 +48,23 @@ public class AuthService {
         if (userService.existsByEmail(registerRequest.getEmail())) {
             throw new RuntimeException("L'email est déjà utilisé");
         }
-        
+
         User user = new User();
         user.setEmail(registerRequest.getEmail());
         user.setPassword(registerRequest.getPassword());
         user.setNom(registerRequest.getNom());
         user.setPrenom(registerRequest.getPrenom());
         user.setTelephone(registerRequest.getTelephone());
-        user.setRole(UserRole.valueOf(registerRequest.getRole()));
-        
+
+        // Validation et conversion du rôle
+        try {
+            UserRole role = UserRole.valueOf(registerRequest.getRole());
+            user.setRole(role);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Rôle invalide: " + registerRequest.getRole() +
+                ". Rôles valides: EMPLOYEUR, MEDECIN, DIRECTEUR_REGIONAL, CHEF_DE_ZONE, ADMIN");
+        }
+
         return userService.save(user);
     }
 }

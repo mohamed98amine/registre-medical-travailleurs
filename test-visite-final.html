@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Visite Final</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .warning { background: #fff8e1; color: #f57c00; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        input, select { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Visite Final</h1>
+    
+    <div class="section">
+        <h3>1. Vérifier le backend</h3>
+        <button onclick="checkBackend()">Vérifier Backend</button>
+        <div id="backendResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2. Charger les données</h3>
+        <button onclick="loadData()">Charger Employeurs, Médecins</button>
+        <div id="dataResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3. Créer une visite</h3>
+        <input type="text" id="typeVisite" placeholder="Type de visite" value="Périodique">
+        <input type="date" id="dateVisite" placeholder="Date de visite">
+        <input type="time" id="heureVisite" placeholder="Heure de visite" value="09:00">
+        <button onclick="createVisite()">Créer Visite</button>
+        <div id="visiteResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>4. Vérifier les visites</h3>
+        <button onclick="loadVisites()">Charger les visites</button>
+        <div id="visitesResult" class="result"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:8080';
+        
+        let employeurs = [];
+        let medecins = [];
+        
+        // Initialiser la date
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dateVisite').value = tomorrow.toISOString().split('T')[0];
+        });
+        
+        async function checkBackend() {
+            const resultDiv = document.getElementById('backendResult');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Vérification du backend...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/employeurs`);
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '✅ Backend opérationnel sur le port 8080';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Backend répond mais erreur: ${response.status}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Backend non accessible: ${error.message}`;
+            }
+        }
+        
+        async function loadData() {
+            const resultDiv = document.getElementById('dataResult');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Chargement des données...';
+            
+            try {
+                const [employeursRes, medecinsRes] = await Promise.all([
+                    fetch(`${BACKEND_URL}/api/employeurs`),
+                    fetch(`${BACKEND_URL}/api/medecins`)
+                ]);
+                
+                employeurs = await employeursRes.json();
+                medecins = await medecinsRes.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `✅ Données chargées:<br>
+                    • ${employeurs.length} employeur(s)<br>
+                    • ${medecins.length} médecin(s)`;
+                    
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur: ${error.message}`;
+            }
+        }
+        
+        async function createVisite() {
+            if (employeurs.length === 0 || medecins.length === 0) {
+                document.getElementById('visiteResult').className = 'result error';
+                document.getElementById('visiteResult').innerHTML = '❌ Veuillez d\'abord charger les données';
+                return;
+            }
+            
+            const typeVisite = document.getElementById('typeVisite').value;
+            const dateVisite = document.getElementById('dateVisite').value;
+            const heureVisite = document.getElementById('heureVisite').value;
+            const resultDiv = document.getElementById('visiteResult');
+            
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Création de la visite...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/visites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        typeVisite,
+                        dateVisite,
+                        heureVisite,
+                        employeurId: employeurs[0].id,
+                        medecinId: medecins[0].id,
+                        statut: 'Prévue'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Visite créée avec succès!<br>
+                        <strong>ID:</strong> ${result.id}<br>
+                        <strong>Type:</strong> ${result.type}<br>
+                        <strong>Date:</strong> ${result.date}<br>
+                        <strong>Employeur:</strong> ${result.employeur?.nom}<br>
+                        <strong>Médecin:</strong> ${result.medecin?.nom}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        async function loadVisites() {
+            const resultDiv = document.getElementById('visitesResult');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Chargement des visites...';
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/visites`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    let html = `✅ ${result.length} visite(s) trouvée(s):<br><br>`;
+                    
+                    if (result.length === 0) {
+                        html += '<div class="info" style="padding: 10px; margin: 5px 0;">Aucune visite trouvée</div>';
+                    } else {
+                        result.forEach(visite => {
+                            html += `<div style="border: 1px solid #ddd; margin: 5px 0; padding: 10px;">
+                                <strong>ID:</strong> ${visite.id}<br>
+                                <strong>Type:</strong> ${visite.type || 'N/A'}<br>
+                                <strong>Date:</strong> ${visite.date || 'N/A'} ${visite.heure || 'N/A'}<br>
+                                <strong>Employeur:</strong> ${visite.employeur?.nom || 'N/A'}<br>
+                                <strong>Médecin:</strong> ${visite.medecin?.nom || 'N/A'}<br>
+                                <strong>Statut:</strong> ${visite.statut || 'N/A'}
+                            </div>`;
+                        });
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur: ${result.error || 'Erreur inconnue'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
+            }
+        }
+        
+        // Auto-vérifier le backend au chargement
+        window.onload = function() {
+            setTimeout(() => {
+                checkBackend();
+            }, 2000);
+        };
+    </script>
+</body>
+</html>
+
+
+
+

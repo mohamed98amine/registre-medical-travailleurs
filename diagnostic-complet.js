@@ -102,3 +102,4 @@ const runDiagnostic = async () => {
 
 // Lancer le diagnostic
 runDiagnostic();
+

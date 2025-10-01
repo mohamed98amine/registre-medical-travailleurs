@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Inscription Chef de Zone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Inscription Chef de Zone</h1>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="nom">Nom *</label>
+                <input type="text" id="nom" required placeholder="Votre nom">
+            </div>
+
+            <div class="form-group">
+                <label for="prenom">Prénom</label>
+                <input type="text" id="prenom" placeholder="Votre prénom (optionnel)">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" required placeholder="votre.email@exemple.com">
+            </div>
+
+            <div class="form-group">
+                <label for="telephone">Téléphone</label>
+                <input type="tel" id="telephone" placeholder="Votre numéro (optionnel)">
+            </div>
+
+            <div class="form-group">
+                <label for="role">Rôle *</label>
+                <select id="role" required>
+                    <option value="">Sélectionner un rôle</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe *</label>
+                <input type="password" id="password" required placeholder="Minimum 6 caractères">
+            </div>
+
+            <button type="submit" id="submitBtn">S'inscrire</button>
+        </form>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Charger les rôles disponibles
+        async function loadRoles() {
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/roles');
+                if (response.ok) {
+                    const data = await response.json();
+                    const roleSelect = document.getElementById('role');
+
+                    data.roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.value;
+                        option.textContent = role.label;
+                        roleSelect.appendChild(option);
+                    });
+
+                    // Sélectionner CHEF_DE_ZONE par défaut
+                    document.getElementById('role').value = 'CHEF_DE_ZONE';
+                } else {
+                    throw new Error('Erreur lors du chargement des rôles');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                // Fallback vers les rôles statiques
+                const roleSelect = document.getElementById('role');
+                const roles = [
+                    { value: 'EMPLOYEUR', label: 'Employeur' },
+                    { value: 'MEDECIN', label: 'Médecin' },
+                    { value: 'DIRECTEUR_REGIONAL', label: 'Directeur Régional' },
+                    { value: 'CHEF_DE_ZONE', label: 'Chef de Zone Médicale' },
+                    { value: 'ADMIN', label: 'Administrateur' }
+                ];
+
+                roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.value;
+                    option.textContent = role.label;
+                    roleSelect.appendChild(option);
+                });
+
+                document.getElementById('role').value = 'CHEF_DE_ZONE';
+            }
+        }
+
+        // Gérer la soumission du formulaire
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Inscription en cours...';
+
+            // Récupérer les données du formulaire
+            const formData = {
+                nom: document.getElementById('nom').value.trim(),
+                prenom: document.getElementById('prenom').value.trim() || null,
+                email: document.getElementById('email').value.trim(),
+                telephone: document.getElementById('telephone').value.trim() || null,
+                role: document.getElementById('role').value,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch('http://localhost:8080/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                resultDiv.style.display = 'block';
+
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Inscription réussie !</h3>
+                        <p>Utilisateur créé avec le rôle: <strong>${formData.role}</strong></p>
+                        <p>Vous pouvez maintenant vous connecter avec ces identifiants.</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ Erreur d'inscription</h3>
+                        <p>${data.error || 'Erreur inconnue'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Erreur de connexion</h3>
+                    <p>Impossible de contacter le serveur. Vérifiez que le backend est démarré.</p>
+                    <pre>${error.message}</pre>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "S'inscrire";
+            }
+        });
+
+        // Charger les rôles au démarrage
+        loadRoles();
+    </script>
+</body>
+</html>

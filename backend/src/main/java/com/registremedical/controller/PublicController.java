@@ -1,15 +1,12 @@
 package com.registremedical.controller;
 
-import com.registremedical.entity.User;
-import com.registremedical.enums.SpecialiteMedicale;
-import com.registremedical.enums.UserRole;
-import com.registremedical.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/public")
@@ -17,14 +14,14 @@ import java.util.List;
 public class PublicController {
 
     @Autowired
-    private UserRepository userRepository;
+    private JdbcTemplate jdbcTemplate;
 
     // Obtenir les médecins par spécialité (endpoint public)
     @GetMapping("/medecins/specialite/{specialite}")
     public ResponseEntity<?> getMedecinsBySpecialite(@PathVariable String specialite) {
         try {
-            SpecialiteMedicale specialiteEnum = SpecialiteMedicale.valueOf(specialite);
-            List<User> medecins = userRepository.findByRoleAndSpecialite(UserRole.MEDECIN, specialiteEnum);
+            String sql = "SELECT * FROM medecins WHERE specialite = ? AND disponible = true ORDER BY nom, prenom";
+            List<Map<String, Object>> medecins = jdbcTemplate.queryForList(sql, specialite);
             return ResponseEntity.ok(medecins);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -37,7 +34,8 @@ public class PublicController {
     @GetMapping("/specialites")
     public ResponseEntity<?> getSpecialites() {
         try {
-            SpecialiteMedicale[] specialites = SpecialiteMedicale.values();
+            String sql = "SELECT DISTINCT specialite FROM medecins WHERE disponible = true ORDER BY specialite";
+            List<String> specialites = jdbcTemplate.queryForList(sql, String.class);
             return ResponseEntity.ok(specialites);
         } catch (Exception ex) {
             ex.printStackTrace();

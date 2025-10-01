@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -15,8 +15,43 @@ const RegisterPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState<Array<{value: string, label: string}>>([]);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Charger les rôles disponibles depuis le backend
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/roles');
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableRoles(data.roles || []);
+        } else {
+          // Fallback vers les rôles statiques si l'API ne fonctionne pas
+          setAvailableRoles([
+            { value: 'EMPLOYEUR', label: 'Employeur' },
+            { value: 'MEDECIN', label: 'Médecin' },
+            { value: 'DIRECTEUR_REGIONAL', label: 'Directeur Régional' },
+            { value: 'CHEF_DE_ZONE', label: 'Chef de Zone Médicale' },
+            { value: 'ADMIN', label: 'Administrateur' }
+          ]);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des rôles:', error);
+        // Fallback vers les rôles statiques
+        setAvailableRoles([
+          { value: 'EMPLOYEUR', label: 'Employeur' },
+          { value: 'MEDECIN', label: 'Médecin' },
+          { value: 'DIRECTEUR_REGIONAL', label: 'Directeur Régional' },
+          { value: 'CHEF_DE_ZONE', label: 'Chef de Zone Médicale' },
+          { value: 'ADMIN', label: 'Administrateur' }
+        ]);
+      }
+    };
+
+    fetchRoles();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +66,45 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    if (nom.trim().length > 50) {
+      toast.error('Le nom ne doit pas dépasser 50 caractères');
+      return;
+    }
+
     if (!email.trim()) {
       toast.error('L\'email est obligatoire');
       return;
     }
 
+    if (email.trim().length > 50) {
+      toast.error('L\'email ne doit pas dépasser 50 caractères');
+      return;
+    }
+
+    // Validation du format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error('Format d\'email invalide');
+      return;
+    }
+
     if (!password.trim()) {
       toast.error('Le mot de passe est obligatoire');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    if (prenom && prenom.trim().length > 50) {
+      toast.error('Le prénom ne doit pas dépasser 50 caractères');
+      return;
+    }
+
+    if (telephone && telephone.trim().length > 20) {
+      toast.error('Le numéro de téléphone ne doit pas dépasser 20 caractères');
       return;
     }
 
@@ -51,13 +118,17 @@ const RegisterPage: React.FC = () => {
         role: role
       };
 
-      // Ajouter seulement les champs non vides
-      if (prenom.trim()) {
+      // Ajouter seulement les champs optionnels qui ont des valeurs
+      if (prenom && prenom.trim()) {
         registerData.prenom = prenom.trim();
       }
-      if (telephone.trim()) {
+      if (telephone && telephone.trim()) {
         registerData.telephone = telephone.trim();
       }
+
+      // Debug: Afficher les données envoyées
+      console.log('Données envoyées au backend:', registerData);
+      console.log('Rôle sélectionné:', role, '(longueur:', role.length, 'caractères)');
 
       await register(registerData);
       
@@ -163,14 +234,26 @@ const RegisterPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Type de compte *
               </label>
-              <select 
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                value={role} 
+              <select
+                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={role}
                 onChange={e => setRole(e.target.value)}
               >
-                <option value="EMPLOYEUR">Employeur</option>
-                <option value="MEDECIN">Médecin</option>
-                <option value="DIRECTEUR_REGIONAL">Directeur Régional</option>
+                {availableRoles.length > 0 ? (
+                  availableRoles.map(roleOption => (
+                    <option key={roleOption.value} value={roleOption.value}>
+                      {roleOption.label}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="EMPLOYEUR">Employeur</option>
+                    <option value="MEDECIN">Médecin</option>
+                    <option value="DIRECTEUR_REGIONAL">Directeur Régional</option>
+                    <option value="CHEF_DE_ZONE">Chef de Zone Médicale</option>
+                    <option value="ADMIN">Administrateur</option>
+                  </>
+                )}
               </select>
             </div>
 

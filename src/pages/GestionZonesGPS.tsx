@@ -1,20 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { 
-  MapPin, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Target, 
-  Users, 
+import {
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
+  Target,
+  Users,
   Building,
   Settings,
   Eye,
   Navigation,
   Circle
 } from 'lucide-react';
+import GoogleMap from '../components/GoogleMap';
 
 // Types
 interface ZoneMedicale {
@@ -89,12 +90,12 @@ const zonesAPI = {
 const GestionZonesGPS: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const mapRef = useRef<HTMLDivElement>(null);
   const [selectedZone, setSelectedZone] = useState<ZoneMedicale | null>(null);
   const [selectedEntreprise, setSelectedEntreprise] = useState<Entreprise | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [mapCenter, setMapCenter] = useState({ lat: 33.5731, lng: -7.5898 }); // Casablanca par défaut
-  const [mapZoom, setMapZoom] = useState(8);
+  const [mapCenter, setMapCenter] = useState({ lat: 12.2383, lng: -1.5616 }); // Ouagadougou, Burkina Faso
+  const [mapZoom, setMapZoom] = useState(10); // Zoom plus élevé pour voir les villages
+  const [mapType, setMapType] = useState<string>('satellite');
 
   // Formulaire de création de zone
   const [newZone, setNewZone] = useState({
@@ -190,6 +191,30 @@ const GestionZonesGPS: React.FC = () => {
     }
   };
 
+  // Gestionnaire de clic sur la carte
+  const handleMapClick = (position: google.maps.LatLngLiteral) => {
+    if (showCreateForm) {
+      setNewZone(prev => ({
+        ...prev,
+        latitude: position.lat,
+        longitude: position.lng
+      }));
+      toast.success('Position sélectionnée sur la carte');
+    }
+  };
+
+  // Gestionnaire de clic sur une zone
+  const handleZoneClick = (zone: ZoneMedicale) => {
+    setSelectedZone(zone);
+    setSelectedEntreprise(null);
+  };
+
+  // Gestionnaire de clic sur une entreprise
+  const handleEntrepriseClick = (entreprise: Entreprise) => {
+    setSelectedEntreprise(entreprise);
+    setSelectedZone(null);
+  };
+
   // Générer une couleur aléatoire pour les nouvelles zones
   const generateRandomColor = () => {
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16'];
@@ -201,20 +226,6 @@ const GestionZonesGPS: React.FC = () => {
     createZoneMutation.mutate(newZone);
   };
 
-  const handleMapClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (showCreateForm) {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
-      
-      // Conversion simplifiée des coordonnées de la carte (à améliorer avec une vraie API de cartes)
-      const lat = mapCenter.lat + (0.5 - y / rect.height) * 2;
-      const lng = mapCenter.lng + (x / rect.width - 0.5) * 3;
-      
-      setNewZone(prev => ({ ...prev, latitude: lat, longitude: lng }));
-      toast.success('Position sélectionnée sur la carte');
-    }
-  };
 
   if (loadingZones) {
     return (
@@ -255,77 +266,51 @@ const GestionZonesGPS: React.FC = () => {
               Carte Interactive
             </h2>
             
-            <div 
-              ref={mapRef}
-              className="w-full h-96 bg-gradient-to-br from-blue-100 to-green-100 rounded-lg border-2 border-dashed border-gray-300 relative overflow-hidden cursor-pointer"
-              onClick={handleMapClick}
-            >
-              {/* Simulation d'une carte avec zones */}
-              <div className="absolute inset-0 bg-blue-50">
-                <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded shadow text-sm">
-                  Carte Maroc - Zoom: {mapZoom}x
-                </div>
-                
-                {/* Affichage des zones existantes */}
-                {zones.map((zone, index) => (
-                  <div
-                    key={zone.id}
-                    className={`absolute w-16 h-16 rounded-full border-4 border-opacity-60 flex items-center justify-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 ${
-                      selectedZone?.id === zone.id ? 'ring-4 ring-yellow-400' : ''
-                    }`}
-                    style={{
-                      backgroundColor: zone.couleurCarte + '40',
-                      borderColor: zone.couleurCarte,
-                      left: `${20 + (index % 4) * 20}%`,
-                      top: `${30 + Math.floor(index / 4) * 25}%`
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedZone(zone);
-                    }}
-                  >
-                    <span className="text-xs font-bold text-gray-700">{zone.nom.substring(0, 2)}</span>
-                  </div>
-                ))}
+            <GoogleMap
+              center={mapCenter}
+              zoom={mapZoom}
+              mapType={mapType}
+            />
 
-                {/* Affichage des entreprises non assignées */}
-                {entreprisesNonAssignees.map((entreprise, index) => (
-                  <div
-                    key={entreprise.id}
-                    className={`absolute w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 ${
-                      selectedEntreprise?.id === entreprise.id ? 'ring-2 ring-yellow-400' : ''
-                    }`}
-                    style={{
-                      left: `${15 + (index % 6) * 15}%`,
-                      top: `${20 + Math.floor(index / 6) * 20}%`
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedEntreprise(entreprise);
-                    }}
-                    title={entreprise.nom}
-                  >
-                    <Building className="h-3 w-3 text-white" />
-                  </div>
-                ))}
+            {/* Contrôles du type de carte */}
+            <div className="mt-4 flex gap-2 justify-center">
+              <button
+                onClick={() => setMapType('satellite')}
+                className={`px-3 py-1 text-xs rounded ${
+                  mapType === 'satellite'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                🛰️ Satellite
+              </button>
+              <button
+                onClick={() => setMapType('hybrid')}
+                className={`px-3 py-1 text-xs rounded ${
+                  mapType === 'hybrid'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                🗺️ Hybride
+              </button>
+              <button
+                onClick={() => setMapType('roadmap')}
+                className={`px-3 py-1 text-xs rounded ${
+                  mapType === 'roadmap'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                🗺️ Plan
+              </button>
+            </div>
 
-                {/* Position de la nouvelle zone */}
-                {showCreateForm && (
-                  <div
-                    className="absolute w-8 h-8 bg-yellow-500 rounded-full border-4 border-white flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 animate-pulse"
-                    style={{
-                      left: '50%',
-                      top: '50%'
-                    }}
-                  >
-                    <Plus className="h-4 w-4 text-white" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="absolute bottom-4 left-4 text-xs text-gray-600 bg-white px-2 py-1 rounded">
-                Cliquez pour placer une nouvelle zone
-              </div>
+            <div className="mt-2 text-xs text-gray-600 bg-blue-50 px-3 py-2 rounded">
+              {showCreateForm
+                ? "Cliquez sur la carte pour placer la nouvelle zone médicale"
+                : "Cliquez sur les marqueurs pour voir les détails"
+              }
             </div>
           </div>
         </div>

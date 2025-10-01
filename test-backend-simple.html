@@ -3,342 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 Test Backend Simple</title>
+    <title>Test Backend Simple</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 20px; 
-            padding: 30px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin: -30px -30px 40px -30px;
-        }
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 25px; 
-            margin: 20px 0; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-            border: 1px solid #e5e7eb;
-        }
-        button { 
-            padding: 12px 24px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin: 10px 5px;
-        }
-        button:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
-        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
-        .result { 
-            margin: 15px 0; 
-            padding: 15px; 
-            border-radius: 8px; 
-            font-family: 'Fira Code', monospace; 
-            font-size: 13px; 
-            line-height: 1.5;
-            white-space: pre-wrap;
-            border-left: 4px solid;
-        }
-        .result.success { background: #ecfdf5; color: #166534; border-color: #10b981; }
-        .result.error { background: #fef2f2; color: #991b1b; border-color: #ef4444; }
-        .result.info { background: #eff6ff; color: #1e40af; border-color: #3b82f6; }
-        input, select, textarea { 
-            padding: 10px 15px; 
-            border: 2px solid #e5e7eb; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            width: 100%;
-            margin: 5px 0;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus, textarea:focus { 
-            outline: none; 
-            border-color: #3b82f6; 
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        .form-group { margin: 15px 0; }
-        label { font-weight: 600; color: #374151; font-size: 14px; display: block; margin-bottom: 5px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        #results { max-height: 400px; overflow-y: auto; }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 3px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .warning { background: #fff8e1; color: #f57c00; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔧 Test Backend Simple</h1>
-            <p>Diagnostic de l'erreur 500 sur les demandes d'affiliation</p>
+    <h1>🧪 Test Backend Simple</h1>
+    
+    <div class="section">
+        <h3>1. Test API Employeurs</h3>
+        <button onclick="testEmployeurs()">Tester GET /api/employeurs</button>
+        <div id="result1" class="result"></div>
         </div>
 
-        <!-- Configuration -->
-        <div class="card">
-            <h2>⚙️ Configuration</h2>
-            <div class="form-group">
-                <label>Backend URL:</label>
-                <input type="text" id="backendUrl" value="http://localhost:8080/api" />
-            </div>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Email:</label>
-                    <input type="text" id="email" value="kr98@gmail.com" />
-                </div>
-                <div class="form-group">
-                    <label>Mot de passe:</label>
-                    <input type="password" id="password" value="password123" />
-                </div>
-            </div>
-            <button class="btn-primary" onclick="testConnection()">🔐 Test Connexion</button>
+    <div class="section">
+        <h3>2. Test API Médecins</h3>
+        <button onclick="testMedecins()">Tester GET /api/medecins</button>
+        <div id="result2" class="result"></div>
         </div>
 
-        <!-- Tests Backend -->
-        <div class="card">
-            <h2>🧪 Tests Backend</h2>
-            <button class="btn-primary" onclick="testHealthCheck()">❤️ Health Check</button>
-            <button class="btn-success" onclick="testLogin()">🔐 Test Login</button>
-            <button class="btn-success" onclick="testCreateDemande()">📝 Test Création Demande</button>
-            <button class="btn-danger" onclick="testDirecteurs()">👔 Test Directeurs</button>
-        </div>
-
-        <!-- Test création simple -->
-        <div class="card">
-            <h2>📝 Test Création Simple</h2>
-            <button class="btn-success" onclick="createSimpleDemande()">✨ Créer Demande Simple</button>
-        </div>
-
-        <!-- Résultats -->
-        <div class="card">
-            <h2>📋 Résultats</h2>
-            <div id="results"></div>
-        </div>
+    <div class="section">
+        <h3>3. Test API Visites</h3>
+        <button onclick="testVisites()">Tester GET /api/visites</button>
+        <div id="result3" class="result"></div>
     </div>
 
     <script>
-        let token = '';
-        const API_BASE = () => document.getElementById('backendUrl').value;
-
-        function addResult(message, type = 'info') {
-            const results = document.getElementById('results');
-            const div = document.createElement('div');
-            div.className = `result ${type}`;
-            div.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-            results.appendChild(div);
-            results.scrollTop = results.scrollHeight;
-        }
-
-        async function testConnection() {
-            addResult('🔄 Test de connexion au backend...', 'info');
+        const BACKEND_URL = 'http://localhost:8080';
+        
+        async function testEmployeurs() {
+            const resultDiv = document.getElementById('result1');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Test en cours...';
             
             try {
-                const response = await fetch(`${API_BASE()}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: document.getElementById('email').value, 
-                        password: document.getElementById('password').value 
-                    })
-                });
+                const response = await fetch(`${BACKEND_URL}/api/employeurs`);
+                const result = await response.json();
 
                 if (response.ok) {
-                    const data = await response.json();
-                    token = data.token;
-                    addResult('✅ Connexion réussie - Token obtenu', 'success');
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Succès! ${result.length} employeur(s) trouvé(s)`;
                 } else {
-                    const errorText = await response.text();
-                    addResult(`❌ Erreur connexion: ${response.status} - ${errorText}`, 'error');
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur ${response.status}: ${result.error || 'Erreur inconnue'}`;
                 }
             } catch (error) {
-                addResult(`❌ Erreur réseau: ${error.message}`, 'error');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
             }
         }
-
-        async function testHealthCheck() {
-            addResult('🔄 Test health check...', 'info');
+        
+        async function testMedecins() {
+            const resultDiv = document.getElementById('result2');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Test en cours...';
             
             try {
-                const response = await fetch(`${API_BASE()}/health`);
+                const response = await fetch(`${BACKEND_URL}/api/medecins`);
+                const result = await response.json();
+                
                 if (response.ok) {
-                    addResult('✅ Backend accessible', 'success');
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Succès! ${result.length} médecin(s) trouvé(s)`;
                 } else {
-                    addResult(`⚠️ Backend répond avec ${response.status}`, 'info');
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur ${response.status}: ${result.error || 'Erreur inconnue'}`;
                 }
             } catch (error) {
-                addResult(`❌ Backend inaccessible: ${error.message}`, 'error');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
             }
         }
-
-        async function testLogin() {
-            addResult('🔄 Test login détaillé...', 'info');
+        
+        async function testVisites() {
+            const resultDiv = document.getElementById('result3');
+            resultDiv.className = 'result warning';
+            resultDiv.innerHTML = '⏳ Test en cours...';
             
             try {
-                const response = await fetch(`${API_BASE()}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email: document.getElementById('email').value, 
-                        password: document.getElementById('password').value 
-                    })
-                });
-
-                addResult(`📤 Status: ${response.status}`, 'info');
-                addResult(`📤 Headers: ${JSON.stringify([...response.headers.entries()])}`, 'info');
-
-                const responseText = await response.text();
-                addResult(`📤 Response: ${responseText}`, 'info');
+                const response = await fetch(`${BACKEND_URL}/api/visites`);
+                const result = await response.json();
 
                 if (response.ok) {
-                    const data = JSON.parse(responseText);
-                    token = data.token;
-                    addResult('✅ Login réussi', 'success');
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Succès! ${result.length} visite(s) trouvée(s)`;
                 } else {
-                    addResult(`❌ Login échoué: ${response.status}`, 'error');
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Erreur ${response.status}: ${result.error || 'Erreur inconnue'}`;
                 }
             } catch (error) {
-                addResult(`❌ Erreur: ${error.message}`, 'error');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Erreur réseau: ${error.message}`;
             }
         }
-
-        async function testCreateDemande() {
-            if (!token) {
-                addResult('❌ Connectez-vous d\'abord', 'error');
-                return;
-            }
-
-            const demandeData = {
-                raisonSociale: "Test SARL",
-                numeroRccm: "BF-TEST-2024-001",
-                secteurActivite: "Test",
-                effectif: 5,
-                adresse: "Test Adresse",
-                representantLegal: "Test Rep",
-                email: "test@test.com",
-                telephone: "+22612345678",
-                contactDrh: "Test DRH"
-            };
-
-            addResult('🔄 Test création demande...', 'info');
-            addResult(`📤 Data: ${JSON.stringify(demandeData)}`, 'info');
-
-            try {
-                const response = await fetch(`${API_BASE()}/demandes-affiliation`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(demandeData)
-                });
-
-                addResult(`📤 Status: ${response.status}`, 'info');
-                addResult(`📤 Headers: ${JSON.stringify([...response.headers.entries()])}`, 'info');
-
-                const responseText = await response.text();
-                addResult(`📤 Response: ${responseText}`, response.ok ? 'success' : 'error');
-
-                if (response.ok) {
-                    addResult('✅ Demande créée avec succès !', 'success');
-                } else {
-                    addResult(`❌ Erreur création: ${response.status}`, 'error');
-                }
-            } catch (error) {
-                addResult(`❌ Erreur réseau: ${error.message}`, 'error');
-            }
-        }
-
-        async function testDirecteurs() {
-            if (!token) {
-                addResult('❌ Connectez-vous d\'abord', 'error');
-                return;
-            }
-
-            addResult('🔄 Test récupération directeurs...', 'info');
-
-            try {
-                // Test avec un endpoint simple
-                const response = await fetch(`${API_BASE()}/users`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                addResult(`📤 Status: ${response.status}`, 'info');
-                const responseText = await response.text();
-                addResult(`📤 Response: ${responseText}`, response.ok ? 'success' : 'error');
-
-            } catch (error) {
-                addResult(`❌ Erreur: ${error.message}`, 'error');
-            }
-        }
-
-        async function createSimpleDemande() {
-            if (!token) {
-                addResult('❌ Connectez-vous d\'abord', 'error');
-                return;
-            }
-
-            // Données minimales
-            const simpleData = {
-                raisonSociale: "Test Simple",
-                numeroRccm: "BF-SIMPLE-001",
-                secteurActivite: "Test",
-                effectif: 1,
-                adresse: "Adresse test",
-                representantLegal: "Test",
-                email: "test@test.com",
-                telephone: "123456789",
-                contactDrh: "Test DRH"
-            };
-
-            addResult('🔄 Création demande simple...', 'info');
-
-            try {
-                const response = await fetch(`${API_BASE()}/demandes-affiliation`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(simpleData)
-                });
-
-                const responseText = await response.text();
-                addResult(`Status: ${response.status}`, response.ok ? 'success' : 'error');
-                addResult(`Response: ${responseText}`, response.ok ? 'success' : 'error');
-
-            } catch (error) {
-                addResult(`❌ Erreur: ${error.message}`, 'error');
-            }
-        }
-
-        // Auto-démarrage
-        window.addEventListener('load', () => {
-            addResult('🚀 Interface de diagnostic initialisée', 'info');
-            addResult('💡 1. Testez la connexion', 'info');
-            addResult('💡 2. Testez la création de demande', 'info');
-            addResult('💡 3. Vérifiez les logs du backend', 'info');
-        });
+        
+        // Auto-tester au chargement
+        window.onload = function() {
+            setTimeout(() => {
+                testEmployeurs();
+                testMedecins();
+                testVisites();
+            }, 2000);
+        };
     </script>
 </body>
 </html>

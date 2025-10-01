@@ -61,7 +61,7 @@ const TravailleurForm: React.FC = () => {
       const list = res.data || [];
       setEntreprises(list);
       // S'il n'y en a qu'une, la sélectionner par défaut
-      if (list.length === 1) setSelectedEntrepriseId(list[0].id);
+      if (list.length === 1) setSelectedEntrepriseId(list[0].id || null);
     } catch (e) {
       console.error('Erreur chargement entreprises', e);
     }
@@ -69,11 +69,11 @@ const TravailleurForm: React.FC = () => {
 
   const fetchTravailleur = async () => {
     if (!id) return;
-    
+
     try {
       const response = await travailleurAPI.getById(parseInt(id));
       const travailleur: Travailleur = response.data;
-      
+
       setValue('nom', travailleur.nom || '');
       setValue('prenom', travailleur.prenom || '');
       setValue('matricule', travailleur.matricule || '');
@@ -83,9 +83,9 @@ const TravailleurForm: React.FC = () => {
       setValue('telephone', travailleur.telephone || '');
       setValue('email', travailleur.email || '');
       setValue('adresse', travailleur.adresse || '');
-      
+
       if (travailleur.expositionsProfessionnelles && travailleur.expositionsProfessionnelles.length > 0) {
-        setValue('expositionsProfessionnelles', 
+        setValue('expositionsProfessionnelles',
           travailleur.expositionsProfessionnelles.map(exp => ({ nom: exp }))
         );
       }
@@ -126,7 +126,7 @@ const TravailleurForm: React.FC = () => {
         await travailleurAPI.create(travailleurData);
         toast.success('Travailleur créé avec succès');
       }
-      
+
       navigate('/travailleurs');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
@@ -330,7 +330,7 @@ const TravailleurForm: React.FC = () => {
             {/* Expositions professionnelles */}
             <div className="md:col-span-2">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Expositions professionnelles</h2>
-              
+
               {fields.map((field, index) => (
                 <div key={field.id} className="flex gap-2 mb-2">
                   <input
@@ -350,7 +350,7 @@ const TravailleurForm: React.FC = () => {
                   )}
                 </div>
               ))}
-              
+
               <button
                 type="button"
                 onClick={() => append({ nom: '' })}

@@ -1,21 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test API</title>
+    <title>Test API Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ddd; background: #f9f9f9; }
+        button { padding: 10px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <h1>Test API Demande Visite</h1>
-    <button onclick="testAPI()">Tester l'API</button>
-    <div id="result"></div>
+    <h1>Test API Simple</h1>
+    
+    <button onclick="testAPI()">1. Tester API</button>
+    <div id="apiResult"></div>
+
+    <button onclick="testMedecins()">2. Tester Médecins</button>
+    <div id="medecinsResult"></div>
+
+    <button onclick="testEntreprises()">3. Tester Entreprises</button>
+    <div id="entreprisesResult"></div>
+
+    <button onclick="createMedecin()">4. Créer Médecin Test</button>
+    <div id="createResult"></div>
 
     <script>
+        const API = 'http://localhost:8080/api';
+
+        function showResult(elementId, content) {
+            document.getElementById(elementId).innerHTML = '<pre>' + JSON.stringify(content, null, 2) + '</pre>';
+        }
+
         async function testAPI() {
             try {
-                const response = await fetch('http://localhost:8080/api/demandes-visite/medecins/specialite/GENERALISTE');
+                const response = await fetch(`${API}/simple-test/hello`);
                 const data = await response.json();
-                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                showResult('apiResult', { status: 'SUCCESS', data });
             } catch (error) {
-                document.getElementById('result').innerHTML = 'Erreur: ' + error.message;
+                showResult('apiResult', { status: 'ERROR', error: error.message });
+            }
+        }
+
+        async function testMedecins() {
+            try {
+                const response = await fetch(`${API}/medecins`);
+                const data = await response.json();
+                showResult('medecinsResult', { status: 'SUCCESS', count: data.length, data });
+            } catch (error) {
+                showResult('medecinsResult', { status: 'ERROR', error: error.message });
+            }
+        }
+
+        async function testEntreprises() {
+            try {
+                const response = await fetch(`${API}/entreprises`);
+                const data = await response.json();
+                showResult('entreprisesResult', { status: 'SUCCESS', count: data.length, data });
+            } catch (error) {
+                showResult('entreprisesResult', { status: 'ERROR', error: error.message });
+            }
+        }
+
+        async function createMedecin() {
+            try {
+                const medecinData = {
+                    nom: 'OUEDRAOGO',
+                    prenom: 'Dr. Jean',
+                    email: 'jean.test@medecin.bf',
+                    telephone: '+226 70 12 34 56',
+                    specialite: 'Médecine du travail',
+                    disponible: true
+                };
+
+                const response = await fetch(`${API}/medecins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medecinData)
+                });
+
+                const data = await response.json();
+                showResult('createResult', { status: 'SUCCESS', created: data });
+            } catch (error) {
+                showResult('createResult', { status: 'ERROR', error: error.message });
             }
         }
     </script>

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Programmer Visite - Système Complet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .success {
+            color: #059669;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        .info {
+            color: #2563eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+        }
+        .status.info {
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test du Système de Programmation de Visites</h1>
+        <p><strong>Objectif :</strong> Tester le système complet de programmation de visites avec listes déroulantes dynamiques</p>
+        
+        <div class="status info">
+            <strong>📋 Fonctionnalités à tester :</strong>
+            <ul>
+                <li>✅ Chargement des données depuis MySQL (entreprises, employeurs, médecins)</li>
+                <li>✅ Ajout rapide d'entreprises avec mise à jour automatique des listes</li>
+                <li>✅ Ajout rapide d'employeurs avec mise à jour automatique des listes</li>
+                <li>✅ Ajout rapide de médecins avec mise à jour automatique des listes</li>
+                <li>✅ Création de visites avec toutes les données liées</li>
+                <li>✅ Sauvegarde en base MySQL</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>🔧 Test de Connexion Backend</h3>
+            <button onclick="testBackendConnection()">Tester la Connexion Backend</button>
+            <div id="backend-status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🏢 Test des Entreprises</h3>
+            <button onclick="testGetEntreprises()">Charger les Entreprises</button>
+            <button onclick="testCreateEntreprise()">Créer une Entreprise Test</button>
+            <div id="entreprises-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 Test des Employeurs</h3>
+            <button onclick="testGetEmployeurs()">Charger les Employeurs</button>
+            <button onclick="testCreateEmployeur()">Créer un Employeur Test</button>
+            <div id="employeurs-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🩺 Test des Médecins</h3>
+            <button onclick="testGetMedecins()">Charger les Médecins</button>
+            <button onclick="testCreateMedecin()">Créer un Médecin Test</button>
+            <div id="medecins-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📅 Test des Visites</h3>
+            <button onclick="testGetVisites()">Charger les Visites</button>
+            <button onclick="testCreateVisite()">Créer une Visite Test</button>
+            <div id="visites-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Test Complet du Système</h3>
+            <button onclick="runCompleteTest()">Lancer le Test Complet</button>
+            <div id="complete-test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            element.innerHTML += `<div class="status ${statusClass}">${message}</div>`;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function testBackendConnection() {
+            clearLog('backend-status');
+            log('backend-status', '🔄 Test de connexion au backend...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/entreprises`);
+                if (response.ok) {
+                    log('backend-status', '✅ Backend connecté et fonctionnel !', 'success');
+                } else {
+                    log('backend-status', `❌ Erreur HTTP: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('backend-status', `❌ Erreur de connexion: ${error.message}`, 'error');
+                log('backend-status', '💡 Vérifiez que le backend est démarré sur le port 8080', 'info');
+            }
+        }
+
+        async function testGetEntreprises() {
+            clearLog('entreprises-result');
+            log('entreprises-result', '🔄 Chargement des entreprises...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/entreprises`);
+                const entreprises = await response.json();
+                
+                log('entreprises-result', `✅ ${entreprises.length} entreprises chargées`, 'success');
+                log('entreprises-result', `<pre>${JSON.stringify(entreprises, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log('entreprises-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateEntreprise() {
+            clearLog('entreprises-result');
+            log('entreprises-result', '🔄 Création d\'une entreprise test...', 'info');
+            
+            const entrepriseTest = {
+                nom: `Tech Faso Test ${Date.now()}`,
+                adresse: 'Zone Industrielle, Ouagadougou',
+                email: `test${Date.now()}@techfaso.bf`,
+                telephone: '70123456',
+                secteurActivite: 'Technologie',
+                effectif: 50
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/entreprises`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entrepriseTest)
+                });
+                
+                if (response.ok) {
+                    const created = await response.json();
+                    log('entreprises-result', '✅ Entreprise créée avec succès !', 'success');
+                    log('entreprises-result', `<pre>${JSON.stringify(created, null, 2)}</pre>`, 'info');
+                } else {
+                    const error = await response.text();
+                    log('entreprises-result', `❌ Erreur: ${error}`, 'error');
+                }
+            } catch (error) {
+                log('entreprises-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetEmployeurs() {
+            clearLog('employeurs-result');
+            log('employeurs-result', '🔄 Chargement des employeurs...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/employeurs`);
+                const employeurs = await response.json();
+                
+                log('employeurs-result', `✅ ${employeurs.length} employeurs chargés`, 'success');
+                log('employeurs-result', `<pre>${JSON.stringify(employeurs, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log('employeurs-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateEmployeur() {
+            clearLog('employeurs-result');
+            log('employeurs-result', '🔄 Création d\'un employeur test...', 'info');
+            
+            const employeurTest = {
+                nom: `OUEDRAOGO`,
+                prenom: `Jean Test ${Date.now()}`,
+                email: `jean.test${Date.now()}@employeur.bf`,
+                telephone: '70234567'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/employeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(employeurTest)
+                });
+                
+                if (response.ok) {
+                    const created = await response.json();
+                    log('employeurs-result', '✅ Employeur créé avec succès !', 'success');
+                    log('employeurs-result', `<pre>${JSON.stringify(created, null, 2)}</pre>`, 'info');
+                } else {
+                    const error = await response.text();
+                    log('employeurs-result', `❌ Erreur: ${error}`, 'error');
+                }
+            } catch (error) {
+                log('employeurs-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetMedecins() {
+            clearLog('medecins-result');
+            log('medecins-result', '🔄 Chargement des médecins...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/medecins`);
+                const medecins = await response.json();
+                
+                log('medecins-result', `✅ ${medecins.length} médecins chargés`, 'success');
+                log('medecins-result', `<pre>${JSON.stringify(medecins, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log('medecins-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateMedecin() {
+            clearLog('medecins-result');
+            log('medecins-result', '🔄 Création d\'un médecin test...', 'info');
+            
+            const medecinTest = {
+                nom: `TRAORE`,
+                prenom: `Amadou Test ${Date.now()}`,
+                email: `a.traore.test${Date.now()}@ost.bf`,
+                telephone: '70345678',
+                specialite: 'Médecine du travail',
+                disponible: true
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/medecins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medecinTest)
+                });
+                
+                if (response.ok) {
+                    const created = await response.json();
+                    log('medecins-result', '✅ Médecin créé avec succès !', 'success');
+                    log('medecins-result', `<pre>${JSON.stringify(created, null, 2)}</pre>`, 'info');
+                } else {
+                    const error = await response.text();
+                    log('medecins-result', `❌ Erreur: ${error}`, 'error');
+                }
+            } catch (error) {
+                log('medecins-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGetVisites() {
+            clearLog('visites-result');
+            log('visites-result', '🔄 Chargement des visites...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/visites`);
+                const visites = await response.json();
+                
+                log('visites-result', `✅ ${visites.length} visites chargées`, 'success');
+                log('visites-result', `<pre>${JSON.stringify(visites, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log('visites-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateVisite() {
+            clearLog('visites-result');
+            log('visites-result', '🔄 Création d\'une visite test...', 'info');
+            
+            // D'abord, récupérer les données nécessaires
+            try {
+                const [entreprisesRes, employeursRes, medecinsRes] = await Promise.all([
+                    fetch(`${API_BASE}/entreprises`),
+                    fetch(`${API_BASE}/employeurs`),
+                    fetch(`${API_BASE}/medecins`)
+                ]);
+                
+                const entreprises = await entreprisesRes.json();
+                const employeurs = await employeursRes.json();
+                const medecins = await medecinsRes.json();
+                
+                if (entreprises.length === 0 || employeurs.length === 0 || medecins.length === 0) {
+                    log('visites-result', '❌ Impossible de créer une visite : données manquantes', 'error');
+                    log('visites-result', `Entreprises: ${entreprises.length}, Employeurs: ${employeurs.length}, Médecins: ${medecins.length}`, 'info');
+                    return;
+                }
+                
+                const visiteTest = {
+                    entrepriseId: entreprises[0].id,
+                    employeurId: employeurs[0].id,
+                    medecinId: medecins[0].id,
+                    typeVisite: 'VMA',
+                    dateVisite: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Dans 7 jours
+                    heureVisite: '09:00',
+                    commentaires: 'Visite test automatique'
+                };
+                
+                const response = await fetch(`${API_BASE}/visites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(visiteTest)
+                });
+                
+                if (response.ok) {
+                    const created = await response.json();
+                    log('visites-result', '✅ Visite créée avec succès !', 'success');
+                    log('visites-result', `<pre>${JSON.stringify(created, null, 2)}</pre>`, 'info');
+                } else {
+                    const error = await response.text();
+                    log('visites-result', `❌ Erreur: ${error}`, 'error');
+                }
+            } catch (error) {
+                log('visites-result', `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function runCompleteTest() {
+            clearLog('complete-test-result');
+            log('complete-test-result', '🚀 Démarrage du test complet...', 'info');
+            
+            try {
+                // Test 1: Connexion backend
+                log('complete-test-result', '1️⃣ Test de connexion backend...', 'info');
+                const backendTest = await fetch(`${API_BASE}/entreprises`);
+                if (!backendTest.ok) throw new Error('Backend non accessible');
+                log('complete-test-result', '✅ Backend accessible', 'success');
+                
+                // Test 2: Création d'une entreprise
+                log('complete-test-result', '2️⃣ Création d\'une entreprise...', 'info');
+                const entrepriseTest = {
+                    nom: `Entreprise Test ${Date.now()}`,
+                    adresse: 'Zone Industrielle, Ouagadougou',
+                    email: `test${Date.now()}@entreprise.bf`,
+                    telephone: '70123456',
+                    secteurActivite: 'Test',
+                    effectif: 25
+                };
+                const entrepriseRes = await fetch(`${API_BASE}/entreprises`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entrepriseTest)
+                });
+                if (!entrepriseRes.ok) throw new Error('Erreur création entreprise');
+                const entreprise = await entrepriseRes.json();
+                log('complete-test-result', `✅ Entreprise créée: ${entreprise.nom}`, 'success');
+                
+                // Test 3: Création d'un employeur
+                log('complete-test-result', '3️⃣ Création d\'un employeur...', 'info');
+                const employeurTest = {
+                    nom: `Employeur Test`,
+                    prenom: `Jean ${Date.now()}`,
+                    email: `jean.test${Date.now()}@employeur.bf`,
+                    telephone: '70234567'
+                };
+                const employeurRes = await fetch(`${API_BASE}/employeurs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(employeurTest)
+                });
+                if (!employeurRes.ok) throw new Error('Erreur création employeur');
+                const employeur = await employeurRes.json();
+                log('complete-test-result', `✅ Employeur créé: ${employeur.nom} ${employeur.prenom}`, 'success');
+                
+                // Test 4: Création d'un médecin
+                log('complete-test-result', '4️⃣ Création d\'un médecin...', 'info');
+                const medecinTest = {
+                    nom: `Médecin Test`,
+                    prenom: `Dr. Amadou ${Date.now()}`,
+                    email: `medecin.test${Date.now()}@ost.bf`,
+                    telephone: '70345678',
+                    specialite: 'Médecine du travail',
+                    disponible: true
+                };
+                const medecinRes = await fetch(`${API_BASE}/medecins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medecinTest)
+                });
+                if (!medecinRes.ok) throw new Error('Erreur création médecin');
+                const medecin = await medecinRes.json();
+                log('complete-test-result', `✅ Médecin créé: Dr. ${medecin.prenom} ${medecin.nom}`, 'success');
+                
+                // Test 5: Création d'une visite
+                log('complete-test-result', '5️⃣ Création d\'une visite...', 'info');
+                const visiteTest = {
+                    entrepriseId: entreprise.id,
+                    employeurId: employeur.id,
+                    medecinId: medecin.id,
+                    typeVisite: 'VMA',
+                    dateVisite: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    heureVisite: '09:00',
+                    commentaires: 'Visite test complète'
+                };
+                const visiteRes = await fetch(`${API_BASE}/visites`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(visiteTest)
+                });
+                if (!visiteRes.ok) throw new Error('Erreur création visite');
+                const visite = await visiteRes.json();
+                log('complete-test-result', `✅ Visite créée: ${visite.typeVisite}`, 'success');
+                
+                // Test 6: Vérification des données
+                log('complete-test-result', '6️⃣ Vérification des données...', 'info');
+                const [entreprises, employeurs, medecins, visites] = await Promise.all([
+                    fetch(`${API_BASE}/entreprises`).then(r => r.json()),
+                    fetch(`${API_BASE}/employeurs`).then(r => r.json()),
+                    fetch(`${API_BASE}/medecins`).then(r => r.json()),
+                    fetch(`${API_BASE}/visites`).then(r => r.json())
+                ]);
+                
+                log('complete-test-result', `📊 Résultats finaux:`, 'info');
+                log('complete-test-result', `   - Entreprises: ${entreprises.length}`, 'success');
+                log('complete-test-result', `   - Employeurs: ${employeurs.length}`, 'success');
+                log('complete-test-result', `   - Médecins: ${medecins.length}`, 'success');
+                log('complete-test-result', `   - Visites: ${visites.length}`, 'success');
+                
+                log('complete-test-result', '🎉 TEST COMPLET RÉUSSI ! Le système fonctionne parfaitement !', 'success');
+                
+            } catch (error) {
+                log('complete-test-result', `❌ Erreur lors du test complet: ${error.message}`, 'error');
+            }
+        }
+
+        // Test automatique au chargement de la page
+        window.onload = function() {
+            setTimeout(() => {
+                testBackendConnection();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+

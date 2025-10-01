@@ -82,4 +82,22 @@ public class AuthController {
                 .body(java.util.Map.of("error", "Erreur lors de la déconnexion"));
         }
     }
+
+    @GetMapping("/roles")
+    public ResponseEntity<?> getAvailableRoles() {
+        try {
+            // Retourner tous les rôles disponibles
+            java.util.List<java.util.Map<String, String>> roles = new java.util.ArrayList<>();
+            for (com.registremedical.enums.UserRole role : com.registremedical.enums.UserRole.values()) {
+                java.util.Map<String, String> roleInfo = new java.util.HashMap<>();
+                roleInfo.put("value", role.name());
+                roleInfo.put("label", role.getDescription());
+                roles.add(roleInfo);
+            }
+            return ResponseEntity.ok(java.util.Map.of("roles", roles));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Map.of("error", "Erreur lors de la récupération des rôles"));
+        }
+    }
 }

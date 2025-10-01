@@ -16,21 +16,25 @@ interface DemandeVisiteFormData {
 }
 
 const SPECIALITES = [
-  { value: 'GENERALISTE', label: 'Médecine générale' },
-  { value: 'CARDIOLOGUE', label: 'Cardiologie' },
-  { value: 'OPHTHALMOLOGUE', label: 'Ophtalmologie' },
-  { value: 'DERMATOLOGUE', label: 'Dermatologie' },
-  { value: 'ORTHOPEDISTE', label: 'Orthopédie' },
-  { value: 'NEUROLOGUE', label: 'Neurologie' },
-  { value: 'PSYCHIATRE', label: 'Psychiatrie' },
-  { value: 'PNEUMOLOGUE', label: 'Pneumologie' },
-  { value: 'GASTROENTEROLOGUE', label: 'Gastro-entérologie' },
-  { value: 'UROLOGUE', label: 'Urologie' },
-  { value: 'GYNECOLOGUE', label: 'Gynécologie' },
-  { value: 'PEDIATRE', label: 'Pédiatrie' },
-  { value: 'RADIOLOGUE', label: 'Radiologie' },
-  { value: 'ANESTHESISTE', label: 'Anesthésie' },
-  { value: 'CHIRURGIEN', label: 'Chirurgie' }
+  { value: 'Médecine générale', label: 'Médecine générale' },
+  { value: 'Cardiologie', label: 'Cardiologie' },
+  { value: 'Ophtalmologie', label: 'Ophtalmologie' },
+  { value: 'Dermatologie', label: 'Dermatologie' },
+  { value: 'Orthopédie', label: 'Orthopédie' },
+  { value: 'Neurologie', label: 'Neurologie' },
+  { value: 'Psychiatrie', label: 'Psychiatrie' },
+  { value: 'Pneumologie', label: 'Pneumologie' },
+  { value: 'Gastro-entérologie', label: 'Gastro-entérologie' },
+  { value: 'Urologie', label: 'Urologie' },
+  { value: 'Gynécologie', label: 'Gynécologie' },
+  { value: 'Pédiatrie', label: 'Pédiatrie' },
+  { value: 'Radiologie', label: 'Radiologie' },
+  { value: 'Anesthésie', label: 'Anesthésie' },
+  { value: 'Chirurgie', label: 'Chirurgie' },
+  { value: 'Médecine interne', label: 'Médecine interne' },
+  { value: 'Hématologie', label: 'Hématologie' },
+  { value: 'Infectiologie', label: 'Infectiologie' },
+  { value: 'Médecine du travail', label: 'Médecine du travail' }
 ];
 
 const TYPES_VISITE = [
@@ -137,11 +141,10 @@ const DemandeVisiteForm: React.FC = () => {
       console.log('selectedTravailleurs:', selectedTravailleurs);
       console.log('data from form:', data);
 
-      const response = await fetch('http://localhost:8080/api/demandes-visite', {
+      const response = await fetch('http://localhost:8080/api/consultations/demande-visite', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       });

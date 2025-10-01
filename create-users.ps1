@@ -47,3 +47,10 @@ ON DUPLICATE KEY UPDATE email = email
 } catch {
     Write-Host "❌ Erreur: $($_.Exception.Message)" -ForegroundColor Red
 }
+
+
+
+
+
+
+

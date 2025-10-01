@@ -1,15 +1,16 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { 
-  LoginRequest, 
-  RegisterRequest, 
-  AuthResponse, 
-  User, 
-  Entreprise, 
+import {
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  User,
+  Entreprise,
   EntrepriseFormData,
   Travailleur,
+  Medecin,
   VisiteMedicale,
-  DashboardStats 
+  DashboardStats
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
@@ -44,7 +45,8 @@ api.interceptors.response.use(
 
     if (status === 403) {
       toast.error('Accès refusé. Permissions insuffisantes.');
-    } else if (status === 401) {
+    } else if (status === 401 && error.config?.url?.includes('/auth/')) {
+      // Déconnecter seulement si l'erreur 401 vient d'un endpoint d'authentification
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       toast.error('Session expirée. Veuillez vous reconnecter.');
@@ -53,8 +55,6 @@ api.interceptors.response.use(
       toast.error('Erreur de connexion au serveur. Vérifiez que le serveur est démarré.');
     } else if (status === 500) {
       toast.error('Erreur interne du serveur. Veuillez réessayer plus tard.');
-    } else {
-      toast.error(message);
     }
     return Promise.reject(error);
   }
@@ -80,7 +80,7 @@ export const entrepriseAPI = {
 
 export const travailleurAPI = {
   getAll: (): Promise<{ data: Travailleur[] }> => 
-    api.get('/travailleurs'),
+    api.get('/travailleurs-simple'),
   
   getById: (id: number): Promise<{ data: Travailleur }> => 
     api.get(`/travailleurs/${id}`),
@@ -89,7 +89,7 @@ export const travailleurAPI = {
     api.get(`/travailleurs/entreprise/${entrepriseId}`),
   
   create: (data: Omit<Travailleur, 'id'>): Promise<{ data: Travailleur }> => 
-    api.post('/travailleurs', data),
+    api.post('/travailleurs-simple', data),
   
   update: (id: number, data: Partial<Travailleur>): Promise<{ data: Travailleur }> => 
     api.put(`/travailleurs/${id}`, data),
@@ -100,7 +100,7 @@ export const travailleurAPI = {
 
 export const visiteMedicaleAPI = {
   getAll: (): Promise<{ data: VisiteMedicale[] }> => 
-    api.get('/visites-medicales'),
+    api.get('/visites'),
   
   getById: (id: number): Promise<{ data: VisiteMedicale }> => 
     api.get(`/visites-medicales/${id}`),
@@ -115,7 +115,10 @@ export const visiteMedicaleAPI = {
     api.get(`/visites-medicales/date/${date}`),
   
   create: (data: Omit<VisiteMedicale, 'id'>): Promise<{ data: VisiteMedicale }> => 
-    api.post('/visites-medicales', data),
+    api.post('/visites', data),
+  
+  sendNotifications: (id: number): Promise<{ data: any }> => 
+    api.post(`/visites-jdbc/${id}/notify`),
   
   update: (id: number, data: Partial<VisiteMedicale>): Promise<{ data: VisiteMedicale }> => 
     api.put(`/visites-medicales/${id}`, data),
@@ -125,19 +128,19 @@ export const visiteMedicaleAPI = {
 };
 
 export const medecinAPI = {
-  getAll: (): Promise<{ data: User[] }> => 
+  getAll: (): Promise<{ data: Medecin[] }> =>
     api.get('/medecins'),
-  
-  getById: (id: number): Promise<{ data: User }> => 
+
+  getById: (id: number): Promise<{ data: Medecin }> =>
     api.get(`/medecins/${id}`),
-  
-  create: (data: Omit<User, 'id'>): Promise<{ data: User }> => 
+
+  create: (data: Omit<Medecin, 'id'>): Promise<{ data: Medecin }> =>
     api.post('/medecins', data),
-  
-  update: (id: number, data: Partial<User>): Promise<{ data: User }> => 
+
+  update: (id: number, data: Partial<Medecin>): Promise<{ data: Medecin }> =>
     api.put(`/medecins/${id}`, data),
-  
-  delete: (id: number): Promise<any> => 
+
+  delete: (id: number): Promise<any> =>
     api.delete(`/medecins/${id}`),
 };
 
@@ -221,6 +224,20 @@ export const demandeAffiliationAPI = {
 };
 
 // Ajouter la méthode get à authAPI pour la compatibilité
+export const notificationAPI = {
+  getAll: (destinataireType: string, destinataireEmail: string): Promise<{ data: any[] }> =>
+    api.get(`/notifications-simple?destinataireType=${destinataireType}&destinataireEmail=${destinataireEmail}`),
+  
+  create: (data: { message: string; destinataireType: string; destinataireEmail: string }): Promise<{ data: any }> =>
+    api.post('/notifications', data),
+  
+  markAsRead: (id: number): Promise<{ data: any }> =>
+    api.put(`/notifications/${id}/lu`),
+  
+  countUnread: (destinataireType: string, destinataireEmail: string): Promise<{ data: { count: number } }> =>
+    api.get(`/notifications/count-unread?destinataireType=${destinataireType}&destinataireEmail=${destinataireEmail}`),
+};
+
 export const authAPI = {
   login: (data: LoginRequest): Promise<{ data: AuthResponse }> => 
     api.post('/auth/login', data),

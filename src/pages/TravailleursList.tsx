@@ -20,8 +20,10 @@ const TravailleursList: React.FC = () => {
   const fetchTravailleurs = async () => {
     try {
       const response = await travailleurAPI.getAll();
+      console.log('Données travailleurs reçues:', response.data);
       setTravailleurs(response.data);
     } catch (error) {
+      console.error('Erreur lors du chargement des travailleurs:', error);
       toast.error('Erreur lors du chargement des travailleurs');
     } finally {
       setLoading(false);
@@ -42,11 +44,11 @@ const TravailleursList: React.FC = () => {
 
   const filteredTravailleurs = travailleurs.filter(travailleur => {
     const matchesSearch = 
-      travailleur.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      travailleur.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      travailleur.matricule.toLowerCase().includes(searchTerm.toLowerCase());
+      (travailleur.nom || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (travailleur.prenom || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (travailleur.email || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = filterPoste === '' || travailleur.poste === filterPoste;
+    const matchesFilter = filterPoste === '' || (travailleur.poste || '') === filterPoste;
     
     return matchesSearch && matchesFilter;
   });
@@ -85,7 +87,7 @@ const TravailleursList: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Nom, prénom ou matricule..."
+                placeholder="Nom, prénom ou email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -125,7 +127,7 @@ const TravailleursList: React.FC = () => {
                   Poste
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date d'embauche
+                  Date de naissance
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
@@ -146,22 +148,22 @@ const TravailleursList: React.FC = () => {
                           {travailleur.nom} {travailleur.prenom}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {travailleur.matricule}
+                          {travailleur.ville || 'Ville non définie'}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">{travailleur.poste}</span>
+                    <span className="text-sm text-gray-900">{travailleur.poste || 'Non défini'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-900">
-                      {new Date(travailleur.dateEmbauche).toLocaleDateString('fr-FR')}
+                      {travailleur.dateNaissance ? new Date(travailleur.dateNaissance).toLocaleDateString('fr-FR') : 'Non définie'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{travailleur.telephone}</div>
-                    <div className="text-sm text-gray-500">{travailleur.email}</div>
+                    <div className="text-sm text-gray-900">{travailleur.telephone || 'Non défini'}</div>
+                    <div className="text-sm text-gray-500">{travailleur.email || 'Non défini'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">

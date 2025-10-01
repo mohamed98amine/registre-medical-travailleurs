@@ -4,6 +4,7 @@ public enum UserRole {
     EMPLOYEUR("Employeur"),
     MEDECIN("Médecin"),
     DIRECTEUR_REGIONAL("Directeur Régional"),
+    CHEF_DE_ZONE("Chef de Zone Médicale"),
     ADMIN("Administrateur");
 
     private final String description;

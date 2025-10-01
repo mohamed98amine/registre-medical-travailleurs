@@ -7,6 +7,7 @@ import com.registremedical.repository.ZoneMedicaleRepository;
 import com.registremedical.repository.EntrepriseRepository;
 import com.registremedical.repository.UserRepository;
 import com.registremedical.security.JwtUtils;
+import com.registremedical.service.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,9 @@ public class ZoneMedicaleController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private MailService mailService;
 
 
     // Lister toutes les zones médicales
@@ -376,12 +380,63 @@ public class ZoneMedicaleController {
             zone.setNombreEntreprisesActuelles(count.intValue());
             zoneMedicaleRepository.save(zone);
 
+            // Notifier le chef de zone
+            notifierChefDeZone(zone, entreprise);
+
             return ResponseEntity.ok().body("Entreprise assignée avec succès");
 
         } catch (Exception ex) {
             ex.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Erreur lors de l'assignation: " + ex.getMessage());
+        }
+    }
+
+    // Méthode pour notifier le chef de zone lors de l'assignation d'une entreprise
+    private void notifierChefDeZone(ZoneMedicale zone, Entreprise entreprise) {
+        try {
+            // Trouver tous les chefs de zone actifs
+            List<User> chefsDeZone = userRepository.findByRole(com.registremedical.enums.UserRole.CHEF_DE_ZONE);
+
+            // Pour l'instant, envoyer à tous les chefs de zone (à améliorer avec une logique de région)
+            for (User chef : chefsDeZone) {
+                if (chef.getActive() != null && chef.getActive()) {
+                    String subject = "Nouvelle entreprise assignée à votre zone";
+                    String htmlBody = String.format(
+                        "<h2>Nouvelle entreprise assignée</h2>" +
+                        "<p>Une nouvelle entreprise a été assignée à la zone <strong>%s</strong>.</p>" +
+                        "<h3>Détails de l'entreprise :</h3>" +
+                        "<ul>" +
+                        "<li><strong>Nom :</strong> %s</li>" +
+                        "<li><strong>Secteur :</strong> %s</li>" +
+                        "<li><strong>Effectif :</strong> %d employés</li>" +
+                        "<li><strong>Adresse :</strong> %s, %s</li>" +
+                        "<li><strong>Contact :</strong> %s %s (%s)</li>" +
+                        "</ul>" +
+                        "<p>Veuillez prendre les mesures nécessaires pour l'intégration de cette entreprise dans votre zone.</p>" +
+                        "<p>Cordialement,<br>Système de Gestion Médicale</p>",
+                        zone.getNom(),
+                        entreprise.getNom(),
+                        entreprise.getSecteurActivite(),
+                        entreprise.getEffectif() != null ? entreprise.getEffectif() : 0,
+                        entreprise.getAdresse(),
+                        entreprise.getVille(),
+                        entreprise.getEmployeur() != null ? entreprise.getEmployeur().getPrenom() : "",
+                        entreprise.getEmployeur() != null ? entreprise.getEmployeur().getNom() : "",
+                        entreprise.getEmail()
+                    );
+
+                    try {
+                        mailService.sendEmailWithAttachment(chef.getEmail(), subject, htmlBody, null, null);
+                        System.out.println("Notification envoyée au chef de zone: " + chef.getEmail());
+                    } catch (Exception emailEx) {
+                        System.err.println("Erreur lors de l'envoi d'email à " + chef.getEmail() + ": " + emailEx.getMessage());
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("Erreur lors de la notification des chefs de zone: " + ex.getMessage());
+            // Ne pas interrompre le processus principal si la notification échoue
         }
     }
 

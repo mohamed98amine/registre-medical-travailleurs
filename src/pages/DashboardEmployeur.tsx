@@ -18,6 +18,7 @@ import {
   Download
 } from 'lucide-react';
 import { visiteMedicaleAPI, demandeAffiliationAPI } from '../services/api';
+import { MedicalStatCard, PatientCard, VisitCard, QuickSummaryCard } from '../components/MedicalCards';
 
 const Chip: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
   <button 
@@ -30,34 +31,6 @@ const Chip: React.FC<{ label: string; active: boolean; onClick: () => void }> = 
   >
     {label}
   </button>
-);
-
-const StatCard: React.FC<{ 
-  icon: React.ReactNode; 
-  title: string; 
-  value: string | number; 
-  color: string; 
-  gradient: string;
-  change?: string;
-}> = ({ icon, title, value, color, gradient, change }) => (
-  <div className={`p-6 rounded-2xl ${gradient} shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-3">
-        <div className={`p-3 rounded-xl ${color} bg-white/20 backdrop-blur-sm`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-sm font-medium text-white/80">{title}</p>
-          <p className="text-2xl font-bold text-white">{value || '-'}</p>
-        </div>
-      </div>
-      {change && (
-        <div className="text-right">
-          <span className="text-xs text-white/70">{change}</span>
-        </div>
-      )}
-    </div>
-  </div>
 );
 
 const DashboardEmployeur: React.FC = () => {
@@ -198,103 +171,130 @@ const DashboardEmployeur: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-6 space-y-8">
-      {/* Header avec titre et actions principales */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/50 p-6 space-y-8 animate-fade-in-medical">
+      {/* Header moderne avec titre et actions principales */}
+      <div className="medical-card">
+        <div className="medical-card-body">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
+            <div>
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="w-12 h-12 gradient-medical-primary rounded-2xl flex items-center justify-center shadow-lg">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold text-gray-900">
             Tableau de bord Employeur
           </h1>
-          <p className="text-gray-600 mt-2">Gérez vos travailleurs et vos visites médicales</p>
+                  <p className="text-gray-600 mt-1">Gérez vos travailleurs et suivez leur santé au travail</p>
+                </div>
+              </div>
+              
+              {/* Indicateurs rapides */}
+              <div className="flex items-center space-x-6 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-gray-600">Système actif</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-600">Dernière sync: Il y a 5 min</span>
+                </div>
+              </div>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3">
           <button 
             onClick={() => navigate('/travailleurs/nouveau')} 
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                className="btn-medical btn-medical-primary"
           >
             <Plus className="w-5 h-5 mr-2" />
-            Ajouter un travailleur
+                Ajouter Travailleur
           </button>
           <button 
             onClick={() => navigate('/demandes-visite/nouvelle')} 
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                className="btn-medical btn-medical-success"
           >
             <Calendar className="w-5 h-5 mr-2" />
-            Nouvelle demande
+                Nouvelle Visite
           </button>
           <button 
             onClick={() => navigate('/demande-affiliation')} 
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                className="btn-medical btn-medical-ghost"
           >
             <FileText className="w-5 h-5 mr-2" />
-            Demande d'affiliation
+                Affiliation
           </button>
-          <button 
-            onClick={() => navigate('/entreprises/nouvelle')} 
-            className="inline-flex items-center px-6 py-3 bg-white text-gray-700 font-medium rounded-xl border-2 border-gray-200 shadow-lg hover:shadow-xl hover:border-blue-300 hover:text-blue-600 transform hover:-translate-y-0.5 transition-all duration-200"
-          >
-            <Building2 className="w-5 h-5 mr-2" />
-            Créer une entreprise
-          </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Section 1: Vue d'ensemble - Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        <StatCard
-          icon={<Users className="w-6 h-6 text-blue-600" />}
+        <MedicalStatCard
+          icon={<Users className="w-6 h-6" />}
           title="Travailleurs"
           value={overview?.travailleurs ?? '-'}
-          color="text-blue-600"
-          gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-          change="+12% ce mois"
+          color="blue"
+          change={{
+            value: "+12% ce mois",
+            type: "positive"
+          }}
+          subtitle="Employés actifs"
         />
-        <StatCard
-          icon={<Calendar className="w-6 h-6 text-emerald-600" />}
-          title="Visites programmées"
+        <MedicalStatCard
+          icon={<Calendar className="w-6 h-6" />}
+          title="Visites Programmées"
           value={overview?.visitesProgrammees ?? '-'}
-          color="text-emerald-600"
-          gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+          color="green"
+          subtitle="Rendez-vous planifiés"
         />
-        <StatCard
-          icon={<UserCheck className="w-6 h-6 text-green-600" />}
-          title="Aptitudes"
+        <MedicalStatCard
+          icon={<UserCheck className="w-6 h-6" />}
+          title="Aptes au Travail"
           value={overview?.aptitudes ?? '-'}
-          color="text-green-600"
-          gradient="bg-gradient-to-br from-green-500 to-green-600"
-          change="+5% ce mois"
+          color="green"
+          change={{
+            value: "+5% ce mois",
+            type: "positive"
+          }}
+          subtitle="Certificats valides"
         />
-        <StatCard
-          icon={<UserX className="w-6 h-6 text-red-600" />}
+        <MedicalStatCard
+          icon={<UserX className="w-6 h-6" />}
           title="Inaptitudes"
           value={overview?.inaptitudes ?? '-'}
-          color="text-red-600"
-          gradient="bg-gradient-to-br from-red-500 to-red-600"
+          color="red"
+          subtitle="Restrictions médicales"
         />
-        <StatCard
-          icon={<Clock className="w-6 h-6 text-amber-600" />}
-          title="Visites en attente"
+        <MedicalStatCard
+          icon={<Clock className="w-6 h-6" />}
+          title="En Attente"
           value={overview?.visitesEnAttente ?? '-'}
-          color="text-amber-600"
-          gradient="bg-gradient-to-br from-amber-500 to-amber-600"
+          color="orange"
+          subtitle="Visites à programmer"
         />
-        <StatCard
-          icon={<RefreshCw className="w-6 h-6 text-purple-600" />}
-          title="À renouveler"
+        <MedicalStatCard
+          icon={<RefreshCw className="w-6 h-6" />}
+          title="À Renouveler"
           value={overview?.visitesARenouveler ?? '-'}
-          color="text-purple-600"
-          gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+          color="purple"
+          subtitle="Certificats expirés"
         />
       </div>
 
       {/* Section 2: Mes Travailleurs */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      <div className="medical-card">
+        <div className="medical-card-header">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 gradient-medical-success rounded-xl flex items-center justify-center shadow-lg">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Mes Travailleurs</h2>
               <p className="text-gray-600 mt-1">Gérez votre équipe et suivez leur état médical</p>
+              </div>
             </div>
             <div className="flex flex-wrap gap-3">
               <Chip label="Tous" active={filter === 'ALL'} onClick={() => setFilter('ALL')} />
@@ -305,173 +305,147 @@ const DashboardEmployeur: React.FC = () => {
           </div>
         </div>
         
-        {/* Barre de recherche */}
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
+        {/* Barre de recherche moderne */}
+        <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50/30 border-b border-gray-100">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Rechercher un travailleur..."
+              placeholder="Rechercher un travailleur (nom, prénom, poste)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="form-input-medical pl-10 pr-4 py-3 w-full"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-              <tr>
-                <th className="text-left p-4 font-semibold text-gray-700">Nom</th>
-                <th className="text-left p-4 font-semibold text-gray-700">Prénom</th>
-                <th className="text-left p-4 font-semibold text-gray-700">Poste</th>
-                <th className="text-left p-4 font-semibold text-gray-700">Dernière visite</th>
-                <th className="text-left p-4 font-semibold text-gray-700">Aptitude</th>
-                <th className="p-4 font-semibold text-gray-700 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {(Array.isArray(filtered) ? filtered.slice(0, 10) : []).map((w: any, index: number) => (
-                <tr key={w.id} className={`hover:bg-blue-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                  <td className="p-4">
-                    <div className="font-medium text-gray-900">{w.nom}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-gray-700">{w.prenom}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-gray-600">{w.poste || '-'}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-gray-600">
-                      {w.derniereVisite ? String(w.derniereVisite).slice(0, 10) : '-'}
+        <div className="medical-card-body">
+          {/* Affichage en grille pour les travailleurs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(Array.isArray(filtered) ? filtered.slice(0, 9) : []).map((w: any) => (
+              <PatientCard
+                key={w.id}
+                patient={{
+                  id: w.id,
+                  nom: w.nom,
+                  prenom: w.prenom,
+                  poste: w.poste,
+                  derniereVisite: w.derniereVisite,
+                  statut: w.aptitude || 'RENOUVELER',
+                  entreprise: "Mon Entreprise"
+                }}
+                onView={(id) => navigate(`/travailleurs/${id}`)}
+                onEdit={(id) => navigate(`/visites-medicales/nouvelle?travailleurId=${id}`)}
+                compact={false}
+              />
+            ))}
+          </div>
+          
+          {/* Affichage vide */}
+          {(!filtered || filtered.length === 0) && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 gradient-medical-primary rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
+                <Users className="h-8 w-8 text-white" />
                     </div>
-                  </td>
-                  <td className="p-4">
-                    {w.aptitude === 'APTE' && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                        Apte
-                      </span>
-                    )}
-                    {w.aptitude === 'INAPTE' && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
-                        Inapte
-                      </span>
-                    )}
-                    {!w.aptitude && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        <div className="w-2 h-2 bg-amber-400 rounded-full mr-2"></div>
-                        À renouveler
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center justify-center space-x-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun travailleur trouvé</h3>
+              <p className="text-gray-600 mb-6">
+                {searchTerm ? 'Aucun résultat pour votre recherche.' : 'Commencez par ajouter des travailleurs.'}
+              </p>
                       <button 
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition-all duration-200" 
-                        title="Voir détail" 
-                        onClick={() => navigate(`/travailleurs/${w.id}`)}
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all duration-200" 
-                        title="Modifier" 
-                        onClick={() => navigate(`/travailleurs/${w.id}/edit`)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-100 rounded-lg transition-all duration-200" 
-                        title="Programmer visite" 
-                        onClick={() => navigate(`/visites-medicales/nouvelle?travailleurId=${w.id}`)}
-                      >
-                        <CalendarIcon className="w-4 h-4" />
+                onClick={() => navigate('/travailleurs/nouveau')}
+                className="btn-medical btn-medical-primary"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un travailleur
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          )}
         </div>
         
-        <div className="p-4 bg-gray-50 border-t border-gray-100">
+        <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50/30 border-t border-gray-100">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              {filtered?.length || 0} travailleur(s) affiché(s)
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <span>{filtered?.length || 0} travailleur(s) affiché(s)</span>
+              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+              <span>Dernière mise à jour: maintenant</span>
             </div>
             <button 
               onClick={() => navigate('/travailleurs')} 
-              className="text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors duration-200"
+              className="btn-medical btn-medical-ghost"
             >
-              Voir tous mes travailleurs →
+              Voir tous mes travailleurs
             </button>
           </div>
         </div>
       </div>
 
-      {/* Section 3: Demandes de visites (rapide) */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-900">Nouvelle demande de visite</h2>
-          <p className="text-gray-600 mt-1">Planifiez rapidement vos visites médicales</p>
+      {/* Section 3: Planification Rapide */}
+      <div className="medical-card">
+        <div className="medical-card-header">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+              <CalendarIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Planification Rapide</h2>
+              <p className="text-gray-600 mt-1">Programmez vos visites médicales en quelques clics</p>
+            </div>
+          </div>
         </div>
         
-        <div className="p-6">
+        <div className="medical-card-body">
+          <div className="form-medical">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type de visite</label>
+              <div className="form-group-medical">
+                <label className="form-label-medical">Type de visite</label>
               <select 
                 id="req-type" 
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
-              >
-                <option value="EMBAUCHE">Embauche</option>
-                <option value="PERIODIQUE">Périodique</option>
-                <option value="FIN_CONTRAT">Fin de contrat</option>
-                <option value="REPRISE">Reprise</option>
+                  className="form-select-medical"
+                >
+                  <option value="EMBAUCHE">Visite d'Embauche</option>
+                  <option value="PERIODIQUE">Visite Périodique</option>
+                  <option value="FIN_CONTRAT">Fin de Contrat</option>
+                  <option value="REPRISE">Visite de Reprise</option>
               </select>
             </div>
             
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Travailleurs concernés</label>
+              <div className="md:col-span-2 form-group-medical">
+                <label className="form-label-medical">Travailleurs concernés</label>
               <select 
                 id="req-workers" 
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white" 
+                  className="form-select-medical" 
                 multiple 
                 size={4}
               >
                 {(workers || []).map((w: any) => (
-                  <option key={w.id} value={w.id} className="py-1">{w.nom} {w.prenom}</option>
+                    <option key={w.id} value={w.id} className="py-2">{w.nom} {w.prenom} - {w.poste}</option>
                 ))}
               </select>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Date souhaitée</label>
+              <div className="form-group-medical">
+                <label className="form-label-medical">Date souhaitée</label>
               <input 
                 id="req-date" 
                 type="date" 
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white" 
+                  className="form-input-medical" 
+                  min={new Date().toISOString().split('T')[0]}
               />
             </div>
             
-            <div className="md:col-span-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Commentaires</label>
+              <div className="md:col-span-3 form-group-medical">
+                <label className="form-label-medical">Commentaires & Observations</label>
               <input 
                 id="req-comment" 
                 type="text" 
-                className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white" 
-                placeholder="Observation courte..." 
+                  className="form-input-medical" 
+                  placeholder="Urgence, contraintes particulières..." 
               />
             </div>
             
-            <div className="md:col-span-1">
+              <div className="md:col-span-1 flex items-end">
               <button
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center"
+                  className="btn-medical btn-medical-success w-full"
                 onClick={async () => {
                   const type = (document.getElementById('req-type') as HTMLSelectElement).value;
                   const date = (document.getElementById('req-date') as HTMLInputElement).value;
@@ -500,231 +474,186 @@ const DashboardEmployeur: React.FC = () => {
                 }}
               >
                 <CalendarIcon className="w-5 h-5 mr-2" />
-                Envoyer demande
+                  Planifier
               </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Section 4: Mes Demandes d'Affiliation */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+      {/* Section 4: Vue d'ensemble des demandes et visites */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* Mes Demandes d'Affiliation */}
+        <div className="medical-card">
+          <div className="medical-card-header">
           <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Mes Demandes d'Affiliation</h2>
-              <p className="text-gray-600 mt-1">Suivez le statut de vos demandes d'affiliation</p>
+                  <h2 className="text-xl font-bold text-gray-900">Demandes d'Affiliation</h2>
+                  <p className="text-gray-600 text-sm">Statut de vos demandes</p>
+                </div>
             </div>
             <button
               onClick={() => navigate('/mes-demandes-affiliation')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                className="btn-medical btn-medical-ghost text-sm"
             >
-              Voir toutes →
+                Voir toutes
             </button>
           </div>
         </div>
         
-        <div className="p-6">
-          {demandesAffiliation && demandesAffiliation.length > 0 ? (
-            <div className="space-y-4">
-              {demandesAffiliation.slice(0, 3).map((demande: any, index: number) => {
-                const getStatusInfo = (statut: string) => {
-                  switch (statut) {
-                    case 'NOUVELLE':
-                      return { color: 'bg-blue-100 text-blue-800', label: 'En attente', icon: Clock };
-                    case 'EN_COURS':
-                      return { color: 'bg-yellow-100 text-yellow-800', label: 'En cours', icon: Clock };
-                    case 'VALIDEE':
-                      return { color: 'bg-green-100 text-green-800', label: 'Validée', icon: UserCheck };
-                    case 'REJETEE':
-                      return { color: 'bg-red-100 text-red-800', label: 'Rejetée', icon: UserX };
-                    default:
-                      return { color: 'bg-gray-100 text-gray-800', label: statut, icon: Clock };
-                  }
-                };
-                
-                const statusInfo = getStatusInfo(demande.statut);
-                const StatusIcon = statusInfo.icon;
-                
-                return (
-                  <div 
-                    key={demande.id} 
-                    className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
-                      index === 0 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' :
-                      index === 1 ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200' :
-                      'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-gray-900">{demande.raisonSociale}</h4>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {statusInfo.label}
-                          </span>
+          <div className="medical-card-body">
+            {demandesAffiliation && demandesAffiliation.length > 0 ? (
+              <div className="space-y-4">
+                {demandesAffiliation.slice(0, 3).map((demande: any, index: number) => {
+                  const getStatusInfo = (statut: string) => {
+                    switch (statut) {
+                      case 'NOUVELLE':
+                        return { color: 'badge-medical-info', label: 'En attente', icon: Clock };
+                      case 'EN_COURS':
+                        return { color: 'badge-medical-warning', label: 'En cours', icon: Clock };
+                      case 'VALIDEE':
+                        return { color: 'badge-medical-success', label: 'Validée', icon: UserCheck };
+                      case 'REJETEE':
+                        return { color: 'badge-medical-danger', label: 'Rejetée', icon: UserX };
+                      default:
+                        return { color: 'badge-medical-info', label: statut, icon: Clock };
+                    }
+                  };
+                  
+                  const statusInfo = getStatusInfo(demande.statut);
+                  const StatusIcon = statusInfo.icon;
+                  
+                  return (
+                    <div 
+                      key={demande.id} 
+                      className="p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-purple-50/50 to-indigo-50/50"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold text-gray-900">{demande.raisonSociale}</h4>
+                            <span className={`badge-medical ${statusInfo.color}`}>
+                              <StatusIcon className="w-3 h-3 mr-1" />
+                              {statusInfo.label}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <p>{demande.secteurActivite} • {demande.effectif} employés</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Soumise le {new Date(demande.dateCreation).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                          {demande.statut === 'REJETEE' && demande.motifRejet && (
+                            <p className="text-xs text-red-600 mt-2 p-2 bg-red-50 rounded-lg">
+                              <strong>Motif de rejet:</strong> {demande.motifRejet}
+                            </p>
+                          )}
                         </div>
-                        <div className="text-sm text-gray-600">
-                          <p>{demande.secteurActivite} • {demande.effectif} employés</p>
-                          <p className="text-xs text-gray-500">
-                            Soumise le {new Date(demande.dateCreation).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                        {demande.statut === 'REJETEE' && demande.motifRejet && (
-                          <p className="text-xs text-red-600 mt-1">
-                            <strong>Motif:</strong> {demande.motifRejet}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className={`w-3 h-3 rounded-full ${
-                          index === 0 ? 'bg-blue-400' :
-                          index === 1 ? 'bg-emerald-400' :
-                          'bg-purple-400'
-                        }`}></div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <div className="text-gray-500 text-sm">Aucune demande d'affiliation pour le moment.</div>
-              <div className="text-gray-400 text-xs mt-1">Soumettez votre première demande d'affiliation</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Section 5: Prochaines Visites Confirmées */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h2 className="text-2xl font-bold text-gray-900">Prochaines Visites Confirmées</h2>
-          <p className="text-gray-600 mt-1">Suivez vos rendez-vous médicaux programmés</p>
-        </div>
-        
-        <div className="p-6">
-          <div className="space-y-4">
-            {Array.isArray(upcoming) && upcoming.length > 0 ? (
-              upcoming.slice(0, 3).map((v: any, index: number) => (
-                <div 
-                  key={v.id} 
-                  className={`p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
-                    index === 0 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' :
-                    index === 1 ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200' :
-                    'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-full ${
-                      index === 0 ? 'bg-blue-100 text-blue-600' :
-                      index === 1 ? 'bg-emerald-100 text-emerald-600' :
-                      'bg-purple-100 text-purple-600'
-                    }`}>
-                      <CalendarIcon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-semibold text-gray-900">
-                          {String(v.dateVisite).slice(0, 10)}
-                        </span>
-                        <span className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700 border">
-                          {v.type}
-                        </span>
-                      </div>
-                      <div className="text-gray-600 mt-1">
-                        Médecin: {v.medecin?.nom || 'Dr.'}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`w-3 h-3 rounded-full ${
-                        index === 0 ? 'bg-blue-400' :
-                        index === 1 ? 'bg-emerald-400' :
-                        'bg-purple-400'
-                      }`}></div>
-                    </div>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             ) : (
               <div className="text-center py-8">
-                <CalendarIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <div className="text-gray-500 text-sm">Aucune visite planifiée pour le moment.</div>
-                <div className="text-gray-400 text-xs mt-1">Utilisez le formulaire ci-dessus pour planifier vos visites</div>
+                <div className="w-16 h-16 gradient-medical-primary rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
+                  <FileText className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande d'affiliation</h3>
+                <p className="text-gray-600 mb-4">Commencez par soumettre votre première demande</p>
+                <button
+                  onClick={() => navigate('/demande-affiliation')}
+                  className="btn-medical btn-medical-primary"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle demande
+                </button>
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Section Contrats Générés */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-900">Mes Contrats d'Affiliation</h2>
-            <p className="text-gray-600 mt-1">Consultez et téléchargez vos contrats générés</p>
+        {/* Prochaines Visites */}
+        <div className="medical-card">
+          <div className="medical-card-header">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <CalendarIcon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Prochaines Visites</h2>
+                  <p className="text-gray-600 text-sm">Rendez-vous confirmés</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/visites-medicales')}
+                className="btn-medical btn-medical-ghost text-sm"
+              >
+                Voir toutes
+              </button>
+            </div>
           </div>
-
-          <div className="p-6">
-            {contratsGeneres.length > 0 ? (
+          
+          <div className="medical-card-body">
+            {Array.isArray(upcoming) && upcoming.length > 0 ? (
               <div className="space-y-4">
-                {contratsGeneres.map((contrat: any, index: number) => (
-                <div 
-                  key={index}
-                  className="p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center justify-between">
+                {upcoming.slice(0, 3).map((v: any, index: number) => (
+                  <div 
+                    key={v.id} 
+                    className="p-4 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-green-50/50 to-emerald-50/50"
+                  >
                     <div className="flex items-center space-x-4">
-                      <div className="p-3 bg-blue-100 rounded-lg">
-                        <FileText className="h-6 w-6 text-blue-600" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                        <CalendarIcon className="w-6 h-6 text-green-600" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{contrat.numeroContrat}</h3>
-                        <p className="text-sm text-gray-600">{contrat.raisonSociale}</p>
-                        <p className="text-xs text-gray-500">
-                          Zone: {contrat.zone} • Montant: {new Intl.NumberFormat('fr-FR', {
-                            style: 'currency',
-                            currency: 'XOF',
-                            minimumFractionDigits: 0
-                          }).format(contrat.montant)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Généré le: {new Date(contrat.dateGeneration).toLocaleDateString('fr-FR')}
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <span className="font-semibold text-gray-900">
+                            {String(v.dateVisite).slice(0, 10)}
+                          </span>
+                          <span className="badge-medical badge-medical-info">
+                            {v.type}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Médecin: {v.medecin?.nom || 'Dr. Non assigné'}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => viewContrat(contrat)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        <Eye className="h-4 w-4 mr-2 inline" />
-                        Consulter
-                      </button>
-          <button
-                        onClick={() => downloadContrat(contrat)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-                        <Download className="h-4 w-4 mr-2 inline" />
-                        Télécharger
-          </button>
-        </div>
                   </div>
-          </div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <div className="text-gray-500 text-sm">Aucun contrat généré pour le moment.</div>
-                <div className="text-gray-400 text-xs mt-1">
-                  Créez un contrat depuis vos demandes d'affiliation validées
+                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <CalendarIcon className="h-8 w-8 text-green-600" />
                 </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune visite planifiée</h3>
+                <p className="text-gray-600 mb-4">Utilisez le formulaire de planification ci-dessus</p>
               </div>
             )}
           </div>
         </div>
+      </div>
+
+      {/* Section Contrats */}
+      <QuickSummaryCard
+        title="Contrats d'Affiliation"
+        icon={<FileText className="h-5 w-5" />}
+        color="purple"
+        items={[
+          { label: "Contrats générés", value: contratsGeneres.length },
+          { label: "En cours", value: "2" },
+          { label: "Validés", value: contratsGeneres.length - 2 }
+        ]}
+      />
     </div>
   );
 };
